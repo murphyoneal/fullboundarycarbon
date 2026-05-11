@@ -1,0 +1,153 @@
+DRL SITE — VERSION 2.1 — DEPLOYMENT INSTRUCTIONS
+================================================
+Build date: 11 May 2026
+Author: Murphy O'Neal
+Status: Built and ready to deploy. Counsel review still pending.
+
+WHAT CHANGED FROM v2 → v2.1
+---------------------------
+Added a hero photograph to the home page (index.html only).
+
+  Photo: misty forest over still water, by Richard Burlton on Unsplash
+  License: free for commercial use, no attribution required (credited
+           in the home page footer as a courtesy)
+  Source: served directly from Unsplash CDN (images.unsplash.com)
+          — no image file bundled with the site, no rights issue, no
+          extra hosting load on Cloudflare
+
+The photo sits BEHIND the headline with a paper-toned overlay so the
+editorial typography stays readable. On the right side of the hero
+the photo fades through; on the left side the paper background is
+near-opaque so the text has full contrast.
+
+If you want to change the photo later, edit /assets/explainer.css
+and search for "curtain-hero--photo" — the URL is in two places (one
+for desktop, one for mobile). Replace both URLs with any other
+Unsplash photo URL.
+
+
+WHAT IS IN THIS BUILD
+---------------------
+The site is now a full public-facing research site, not a one-feature
+ledger. Everything you asked for at the not-yet-legal-reviewed level
+is present:
+
+  /  index.html                  Home (with photo hero)
+  /  codex.html                  Codex landing + full Codex download
+  /  companions.html             Reagan paper + timeline + chart + brief + NECO2
+  /  about.html                  Murphy bio + not-paid statement + disclosures
+  /  resources.html              Curated directory of calculators/standards/regulators
+  /  methodology.html            Plain-language DRL methodology with citations
+  /  feedback.html               Submission channel + chain-of-notice
+  /  legal.html                  Terms, copyright, disclaimers (DRAFT)
+  /  pages/behind-the-curtain.html   Explainer (was already live, nav updated)
+  /  corrected-ledger/           Ledger (was already live, nav updated)
+  /  docs/                       All downloadable documents
+
+DOCUMENTS PUBLISHED FOR DOWNLOAD
+--------------------------------
+  /docs/DRL-Codex-v4.3.0.pdf                            136 pp, 1.6 MB
+  /docs/Reagan-Forestry-Legacy-v3.2.pdf                  31 pp, 1.1 MB
+  /docs/Reagan-Vertical-Timeline-1981-2030.pdf            8 pp,  32 KB
+  /docs/Lumber-PPI-Price-Configuration-1981-2026.pdf      1 pg,  71 KB
+  /docs/DRL-Section-7.4-NECO2-Worked-Example.pdf          9 pp, 622 KB
+  /docs/DRL-Configuration-as-Authority.pdf              PDF, 167 KB
+  /docs/DRL-Configuration-as-Authority.docx             Word source
+
+WHAT STILL DOES NOT EXIST (deliberately)
+----------------------------------------
+  /political-connections.html              Counsel-gated. Not built.
+  /appendices/appendix-w.pdf               Counsel-gated. Not uploaded.
+  /appendices/appendix-z.pdf               Counsel-gated. Not uploaded.
+
+
+HOW TO DEPLOY (GitHub Desktop, one-shot)
+----------------------------------------
+You already have GitHub Desktop set up and `murphyoneal/fullboundarycarbon`
+cloned locally to:
+    C:\Users\<you>\Documents\GitHub\fullboundarycarbon\
+
+The cleanest sequence:
+
+  Step 1. Open File Explorer to your local repo folder.
+
+  Step 2. Delete (or move out) everything currently in that folder
+          EXCEPT the .git folder (which Windows usually hides — if
+          you don't see it, that's fine, just leave it alone).
+          The old index.html and any other v1 files need to be gone
+          since v2.1 replaces them.
+
+  Step 3. Extract site-v2.zip on your computer. Open the extracted
+          site-v2 folder so you can see the contents: assets/, docs/,
+          pages/, corrected-ledger/, reproduction-sheets/, and the
+          loose .html files.
+
+  Step 4. Select ALL the contents of the extracted site-v2 folder
+          (Ctrl+A), copy (Ctrl+C), paste (Ctrl+V) into your GitHub
+          repo local folder.
+
+  Step 5. Open GitHub Desktop. It will show many changes — additions,
+          modifications, possibly some deletions of v1 files. That's
+          correct.
+
+  Step 6. In the Summary box at the bottom type:
+              "Site v2.1: full content, all docs, photo hero"
+          Click "Commit to main".
+
+  Step 7. Click "Push origin" at the top.
+
+  Step 8. Cloudflare auto-deploys within ~60 seconds. Test at:
+              https://fullboundarycarbon.pages.dev
+
+
+WHAT TO TEST AFTER DEPLOY
+-------------------------
+  [ ] Home page (/) loads. PHOTO LOADS in the hero. Headline is
+      readable on top of the photo. Looks like an editorial
+      publication, not a marketing brochure.
+  [ ] Click each of the four "doors" — all four pages open.
+  [ ] Codex download works (PDF opens to a real Codex).
+  [ ] All five companion downloads work.
+  [ ] Resources page links open in new tabs to the right places.
+  [ ] About page reads correctly.
+  [ ] Behind the Curtain (/pages/behind-the-curtain.html) still works.
+  [ ] Corrected Ledger pages still calculate correctly.
+  [ ] Mobile view: the photo is still visible but lighter, headline
+      readable. Test on your phone.
+
+
+IF YOU DON'T LIKE THE PHOTO
+---------------------------
+Tell me and I'll point to a different one. The selected photo (Richard
+Burlton on Unsplash) was chosen because the search description matched
+your brief (forest + water + mist), the composition has space on the
+left for headline text, and the colour palette doesn't clash with the
+site's paper-and-oxblood scheme. If it looks wrong when you see it
+rendered, the swap is a one-line CSS change.
+
+
+COUNSEL REVIEW PRIORITY ORDER
+-----------------------------
+Same as v2:
+  1. /docs/Reagan-Forestry-Legacy-v3.2.pdf (Sections 4, 5, 9, 10, 12)
+  2. /docs/DRL-Codex-v4.3.0.pdf (Section 6 onwards)
+  3. /about.html (disclosure of competitive interest)
+  4. /pages/behind-the-curtain.html (Sections 3 and 5)
+  5. /corrected-ledger/timber/*/index.html (Block 02 quotes)
+  6. /legal.html (currently DRAFT)
+  7. /resources.html (footer disclaimer)
+
+
+CUSTOM DOMAIN ATTACH (5 minutes)
+--------------------------------
+After v2.1 is deployed and tested:
+  1. Cloudflare dashboard → Workers & Pages → fullboundarycarbon
+  2. Custom domains tab → Set up a custom domain
+  3. Type: fullboundarycarbon.org → Continue
+  4. Cloudflare detects you own the domain → click Activate
+  5. Repeat for www.fullboundarycarbon.org
+
+DNS propagates within 60 seconds since your domain is already on
+Cloudflare.
+
+— End of deploy instructions —

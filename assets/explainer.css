@@ -18,6 +18,59 @@
     linear-gradient(180deg, transparent 0%, rgba(184, 173, 153, 0.05) 100%);
 }
 
+/* ---- photo hero variant ---- */
+/* Used on the home page only. Photograph sits behind the headline
+   with a paper-toned overlay so the editorial typography stays
+   readable. Image is served from the Unsplash CDN (no attribution
+   required by license; credited in the footer as a courtesy). */
+.curtain-hero--photo {
+  padding: 5.5rem 0 4.5rem;
+  background-color: var(--ink);
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(244, 241, 234, 0.95) 0%,
+      rgba(244, 241, 234, 0.82) 35%,
+      rgba(244, 241, 234, 0.55) 65%,
+      rgba(244, 241, 234, 0.35) 100%
+    ),
+    url('https://images.unsplash.com/photo-1723320011923-5829a70b5248?fm=jpg&q=82&w=2400&auto=format&fit=crop&ixlib=rb-4.1.0');
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+}
+
+.curtain-hero--photo::before {
+  /* Hide the centre rule on the photo variant — it competes with the photo */
+  display: none;
+}
+
+.curtain-hero--photo .curtain-hero-inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* Stronger backdrop for the standfirst paragraph so it survives on top of the image */
+.curtain-hero--photo .standfirst {
+  color: var(--ink);
+  font-style: italic;
+}
+
+/* Mobile: shorter hero, tighter overlay so the text is fully on the paper side */
+@media (max-width: 720px) {
+  .curtain-hero--photo {
+    padding: 3rem 0 2.5rem;
+    background-image:
+      linear-gradient(
+        to right,
+        rgba(244, 241, 234, 0.97) 0%,
+        rgba(244, 241, 234, 0.92) 60%,
+        rgba(244, 241, 234, 0.75) 100%
+      ),
+      url('https://images.unsplash.com/photo-1723320011923-5829a70b5248?fm=jpg&q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0');
+  }
+}
+
 .curtain-hero::before {
   content: '';
   position: absolute;
