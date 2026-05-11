@@ -1,0 +1,54 @@
+# DRL Reproduction Sheet
+# Building,T3 Minneapolis
+# Location,"Minneapolis, Minnesota, United States"
+# Completed,September 2016
+# Architect,Michael Green Architecture (design); DLR Group (architect of record)
+# Structural,Magnusson Klemencic Associates
+# LCA practitioner,No EN 15978 LCA published. Carbon figures derive from the WoodWorks / Canadian Wood Council Carbon Calculator.
+# LCA standard,No whole-building LCA standard applied to disclosed figures.
+# Auditor,Murphy O'Neal
+# Version,1.0
+
+# === Public sources ===
+#,MGA T3 project page,https://mg-architecture.ca/project/t3-minneapolis/
+#,Architizer T3 profile,https://architizer.com/projects/minneapolis-t3/
+#,Dezeen 2016 article,https://www.dezeen.com/2016/12/02/michael-green-architecture-t3-largest-mass-timber-building-usa-minneapolis-minnesota/
+#,WoodWorks award gallery,https://www.woodworks.org/award-gallery/t3-minneapolis/
+
+# === Disclosed figures ===
+Item,Value,Unit
+Timber volume,3600,m3
+Biogenic stored,3646,tCO2e
+Substitution avoided,1411,tCO2e
+Total disclosed wood benefit,5057,tCO2e
+
+# === Recompute inputs ===
+Input,Value,Unit / Band
+Timber volume,3600,m3
+A1-A3 factor,0.18,tCO2e/m3
+Biogenic storage factor,0.917,tCO2e/m3
+SOC efflux factor,0.12,tCO2e/m3 (band: mid)
+EOL methane fraction,0.12,fraction of biogenic C (band: ximenes)
+Foregone seq factor,0.45,tCO2e/m3 (band: yr50)
+
+# === Recompute outputs ===
+Line,Value,Unit
+A1-A3,648.0,tCO2e
+Biogenic storage,-3646,tCO2e
+Disclosed net,-4409.0,tCO2e
+SOC efflux,432.0,tCO2e
+EOL methane,4438.84,tCO2e
+Foregone sequestration,1620.0,tCO2e
+Full-boundary total,7138.84,tCO2e
+Delta vs disclosed,11547.84,tCO2e
+
+# === Boundary statements (from source) ===
+#,On the source of the disclosed figures,Michael Green Architecture project page; Architizer profile,"T3 stores 3,646 metric tons of carbon dioxide. According to the WoodWorks Wood Calculator tool's Carbon Summary: using wood to construct T3 generates environmental benefits that are equivalent to taking 966 cars off the road for a year. By using wood, T3 avoided 1,411 metric tons of carbon dioxide emissions."
+
+# === Notes ===
+#,"This building does not have a published EN 15978 or ISO 14040/44 whole-building life cycle assessment. The disclosed figures derive from the Canadian Wood Council / WoodWorks Wood Calculator, which is a vendor screening tool, not an EN 15978 LCA. The Reproduction Sheet treats the calculator output as the disclosed value and recomputes against it."
+#,"Foregone-sequestration window is set to 50 years (low band) rather than 100 to reflect that the harvested trees were mountain pine beetle-killed and would, absent salvage, have decomposed and released their carbon. This is a calibration that lowers the foregone-sequestration line; for live-harvest timber it would be set higher."
+#,"End-of-life methane line uses 12% of biogenic carbon released as CH4 in landfill (Ximenes 2008), times 16/44 (CH4:C mass), times 27.9 (IPCC AR6 GWP100). Applied to the disclosed biogenic-store value of 3,646 tCO2e converted to carbon mass."
+#,"Substitution credit of 1,411 tCO2e is preserved as disclosed for the disclosed-net line. It is not separately deducted from the recomputed full-boundary total because the recomputed total addresses wood-attributable lines only and is then compared to the same scope."
+
+# All emission factors are sourced. See companion PDF or building page for citations.

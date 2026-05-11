@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Behind the Curtain — Why this site exists — DRL</title>
+<meta name="description" content="In plain language: what is wrong with how the construction industry measures carbon, why nothing has changed, and why a senior environmental auditor built a public record. Forest as part of us, not commodity.">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/explainer.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-title"><a href="../index.html">Divergent Resource Logic <em>— DRL</em></a></div>
+  <nav class="masthead-nav">
+    <a href="../index.html">Home</a>
+    <a href="behind-the-curtain.html" class="active">Behind the Curtain</a>
+    <a href="../codex.html">Codex</a>
+    <a href="../corrected-ledger/index.html">Corrected Ledger</a>
+    <a href="../resources.html">Resources</a>
+    <a href="../about.html">About</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ========== HERO ========== -->
+<section class="curtain-hero">
+  <div class="curtain-hero-inner">
+    <span class="kicker">Behind the Curtain</span>
+    <h1>There is a curtain.<br>Behind it is a number.<br>The <em>number is wrong.</em></h1>
+    <p class="standfirst">This page explains why — in plain language — and what one senior environmental auditor decided to do about it after thirty years of practice. No jargon. No accusations. Just the configuration, laid out so a ten-year-old could follow it.</p>
+  </div>
+</section>
+
+<!-- ========== SECTION 1 — what this site is ========== -->
+<section>
+  <span class="kicker">What this site is</span>
+  <h2>One room with every calculator in it</h2>
+
+  <p>The world has built dozens of carbon calculators for buildings. Each was built by a different organisation — sometimes a government agency, sometimes an industry association, sometimes a software company. Each calculator uses a slightly different set of rules. Each one stops counting carbon at a slightly different point.</p>
+
+  <p>If you ask the wood industry's calculator about a wooden building, it gives a low number. If you ask the concrete industry's calculator about a concrete building, it gives a different low number. Both calculators are technically correct under their own rules. Neither one tells you the full story.</p>
+
+  <p>This site puts every calculator, every standard, and every country's rule in one room, side by side. It also publishes a recomputation of well-known buildings under a wider set of rules — the same rules other industries already have to follow. The recomputed numbers are larger. They are also more honest.</p>
+
+  <p>The framework underlying the recomputations is called <em>Divergent Resource Logic</em>, or DRL. The name comes from a simple observation: the rules that apply to a tree and to a rock are different. Same extraction. Same processing. Same downstream effects. Different rules. That divergence is what this site exists to make visible.</p>
+</section>
+
+<hr class="rule">
+
+<!-- ========== SECTION 2 — the boundary chart ========== -->
+<section>
+  <span class="kicker">The simplest version of the problem</span>
+  <h2>How far different materials are counted</h2>
+
+  <p>Every life cycle assessment has a <em>boundary</em>. The boundary is the line where counting stops. The chart below shows how far each common construction material gets counted under standard rules. A bar that goes from 0 to 100 means cradle-to-grave — every emission, from extraction through to final disposal. A shorter bar means counting stops earlier.</p>
+
+  <div class="boundary-chart">
+    <div class="boundary-chart-title">Coverage of life cycle stages by material — standard reporting practice</div>
+    <div class="boundary-chart-scale">
+      <span>Extraction</span><span>Processing</span><span>Use</span><span>End of life</span><span>Forest / Mine impact</span>
+    </div>
+    <div class="boundary-chart-axis"></div>
+
+    <div class="boundary-row">
+      <span class="label">Aluminium</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="left: 0; width: 100%"></div>
+      </div>
+      <span class="pct">0 → 100</span>
+    </div>
+    <div class="boundary-row">
+      <span class="label">Steel</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="left: 0; width: 95%"></div>
+      </div>
+      <span class="pct">0 → 95</span>
+    </div>
+    <div class="boundary-row">
+      <span class="label">Concrete</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="left: 0; width: 90%"></div>
+      </div>
+      <span class="pct">0 → 90</span>
+    </div>
+    <div class="boundary-row">
+      <span class="label">Brick &amp; glass</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="left: 0; width: 85%"></div>
+      </div>
+      <span class="pct">0 → 85</span>
+    </div>
+    <div class="boundary-row timber">
+      <span class="label">Mass timber</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="left: 15%; width: 35%; --missing-width: 50%"></div>
+      </div>
+      <span class="pct">15 → 50</span>
+    </div>
+
+    <div class="boundary-chart-legend">
+      <span><span class="swatch ink"></span>Counted under standard rules</span>
+      <span><span class="swatch oxblood"></span>Counted for timber (partial)</span>
+      <span><span class="swatch missing"></span>Excluded — what DRL adds back</span>
+    </div>
+  </div>
+
+  <p style="font-size: 0.92rem; color: var(--ink-soft); margin-top: 0.5rem;">The chart is schematic — exact percentages vary by standard and study. The shape is not in dispute. Aluminium gets a recovery credit (Module D) and is counted to the gram. Steel is similar. Concrete includes carbonation re-uptake at end-of-life. Timber, alone among major construction materials, both starts late (skips soil and forest dynamics) and ends early (skips most end-of-life methane).</p>
+
+  <h3>The three pieces missing from timber's bar</h3>
+  <p>The shaded extension on the timber bar above represents three specific carbon flows that other materials' bars include but timber's does not:</p>
+  <ol style="font-family: var(--serif); font-size: 1.05rem; margin: 1rem 0 1.5rem 1.5rem; line-height: 1.65;">
+    <li><strong>Soil carbon.</strong> About half a tree — by mass and by carbon content — is underground. Roots, soil fungi, the organic layer in the topsoil. When a forest is clear-felled, much of this carbon oxidises and leaves the soil over the following decade. Peer-reviewed meta-analyses put the loss at roughly 11% of soil organic carbon in the top 30 cm. It is not in any standard wood LCA.</li>
+    <li><strong>End-of-life methane.</strong> When timber is buried in landfill at the end of a building's life — which most of it is, in the U.S. and Canada — the wood decomposes anaerobically and releases methane. Methane is 27.9 times more potent than CO₂ over a hundred years. Standard wood LCAs assume preferred end-of-life scenarios; reality often differs.</li>
+    <li><strong>Foregone sequestration.</strong> If a tree had not been felled, it would have kept growing — and the science is now clear that large trees keep adding mass faster than small trees. Stephenson and colleagues confirmed this in <em>Nature</em> in 2014 across 403 species. The carbon a forest would have stored, had it not been harvested, is the largest of the three missing pieces and the most contested.</li>
+  </ol>
+
+  <p>Add those three lines and the timber bar gets longer. The wooden building's carbon number gets bigger. Sometimes a lot bigger. That is the entire arithmetic of DRL.</p>
+</section>
+
+<hr class="rule">
+
+<!-- ========== SECTION 3 — why nothing has changed ========== -->
+<section>
+  <span class="kicker">Why nothing has changed</span>
+  <h2>The boundary did not move by accident</h2>
+
+  <p>The standards that govern building life cycle assessment — EN 15978 in Europe, ISO 14040/44 globally, the various national standards built on top — all share the same treatment of biogenic carbon. The treatment is called the <em>carbon-neutral convention</em>. It says: sequestration in growing wood is reported as a negative emission at production stage; the same amount is then reported as a positive emission at end of life. The net is zero. By convention. Regardless of what actually happens to the carbon.</p>
+
+  <p>This is a methodological choice. It was made decades ago when the science of soil carbon and forest dynamics was less developed. It has not been revisited as the science has caught up. The bodies that maintain the standards — the European Committee for Standardization, the International Organization for Standardization, the major wood-industry research consortia — have all participated in the development of mass timber building codes and life cycle assessment methodology in the same period, often in the same working groups.</p>
+
+  <p>None of that is a secret. All of it is in published meeting records, industry-funded grant programmes, and lobbying disclosures.</p>
+
+  <h3>What government has published about it</h3>
+  <p>In the United States, three pieces of public record are sufficient to demonstrate the configuration without naming intent:</p>
+
+  <ul style="font-family: var(--serif); font-size: 1.05rem; margin: 1rem 0 1.5rem 1.5rem; line-height: 1.65;">
+    <li>On 23 April 2018, the U.S. Environmental Protection Agency issued a policy statement classifying forest biomass as carbon-neutral for the purpose of stationary-source emissions accounting. The statement itself notes, verbatim: <em>"this statement of agency policy is not a scientific determination."</em> The same day, the American Forest &amp; Paper Association issued a press release characterising the EPA's classification as "reflecting long-standing scientific principles." Both documents are public.</li>
+    <li>The U.S. Department of Agriculture's Forest Service has, since 2014, operated grant programmes — including the Wood Innovations Grant Program — that have funded mass timber demonstration projects, building-code research, and life cycle assessment methodology development. Congressional Research Service Report R47752 notes, verbatim: <em>"It is not always clear what specific FS mission area or authority has supported each of these — and other — activities."</em></li>
+    <li>The Softwood Lumber Board, a federally authorised industry checkoff programme, has co-funded WoodWorks (the wood-industry technical assistance organisation behind the Wood Calculator used in the T3 Minneapolis disclosures), with the Board's own published framing for the partnership being to <em>"support, influence, convert"</em> design professionals to wood specification.</li>
+  </ul>
+
+  <p>None of those facts is contested. They are reproduced from the agencies' and organisations' own publications. The reader can decide what configuration they describe.</p>
+
+  <h3>The CEO lifespan problem</h3>
+  <p>One more structural observation, and then we move to the personal part. CEOs of forestry companies typically take their roles between ages 45 and 55 and serve, on average, about a decade. The decade in which soil organic carbon drops most steeply is the first one after harvest. The decades in which the end-of-life methane will eventually be released — for buildings constructed in the 2020s — are the 2070s and 2080s. No single person in the corporate chain experiences both ends of the consequence. The forest looks green from the road. The slash pile is behind the hill. Institutional amnesia is not a bug. It is a design feature of how the time horizons line up.</p>
+</section>
+
+<hr class="rule">
+
+<!-- ========== SECTION 4 — first-person ========== -->
+<section>
+  <div class="firstperson">
+    <span class="kicker">Why I built this</span>
+    <h2>Murphy O'Neal — a note from the auditor</h2>
+
+    <p>No one paid me to do this work. I am not affiliated with a conservation organisation, an environmental advocacy group, or a competing industry. I have not been retained by anyone's law firm. I am a senior environmental auditor with thirty years of practice, and what is on this website began as the research file for an industrial product development project of my own — an aluminium modular housing system. The recomputation of timber buildings was a side effect of trying to choose the most defensible material under a full-boundary accounting standard.</p>
+
+    <p>What I noticed, doing that research, was that the cradle-to-grave map for timber had pieces missing. About half a tree is below ground. Roots, soil carbon, the fungal network. Standard LCAs don't count it. I asked auditing colleagues why. The answers were variations of "the standard says so." I went looking for what the standard actually says, and found that EN 15978 explicitly excludes the forest-side processes — soil dynamics, foregone sequestration, the consequences of clear-felling at landscape scale. It is excluded by methodological choice, not by absence of data.</p>
+
+    <p>Then I started looking at the second half of the life cycle. End-of-life methane from mass timber in landfill. The literature has been clear since at least Ximenes 2008. It is not in the building LCAs either.</p>
+
+    <p>I have been in rock quarries. I have been in mines and processing facilities. I have audited factories. When a factory has a chemical spill the size of the carbon flows we are talking about here, the spill is in the local news within days. There are investigations, lawsuits, permit reviews, executive testimony, reputational damage that takes a decade to repair. When a forestry operation removes the same amount of carbon from the same land, distributed across soil and atmosphere over the following two decades, almost no one notices. The factory and the forestry operation are doing materially similar things to the local environment. They face very different sets of rules. That is the divergence DRL is named for.</p>
+
+    <p>I built this site because what I found in my own research is, as far as I can tell, not in any single public place. Pieces of it are in academic journals. Pieces are in agency footnotes. Pieces are in lobbying disclosures. Nobody had pulled them together for a non-specialist reader. So I did. The recomputations are my work. The biases — if any — are mine. The calculator engine, every emission factor, every citation is on this site and can be challenged line by line. That is the standard I learned in thirty years of audit practice and it is the standard this site is built to.</p>
+
+    <p>One last thing. I am not anti-forestry. Short-rotation plantation grown for paper or cardboard, certified properly, harvested on a 7–15 year cycle, is the most defensible use of forestry that exists. The critique here is narrower: long-rotation structural timber harvested from primary or near-primary forest, accounted for under the biogenic-neutral convention, with the soil and end-of-life flows omitted. That is the configuration this site documents. It is not the entire industry. It is a particular slice of it that has, for the past fifteen years, received outsized regulatory and policy support relative to the carbon arithmetic actually supports.</p>
+
+    <div class="sig">
+      <span class="sig-name">Murphy O'Neal</span>, senior environmental auditor
+      <span class="sig-role">Lead author, DRL Thesis Codex · Florida, USA</span>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ========== SECTION 5 — factory vs forest ========== -->
+<section>
+  <span class="kicker">A comparison</span>
+  <h2>If a factory did this, the news would be on every channel</h2>
+
+  <p>The thought experiment is short. Imagine a manufacturing facility that, every fifteen to thirty years, releases the same quantity of carbon and disturbs the same volume of soil that a single average industrial clear-cut releases. Now imagine a forestry operation doing the same thing. The two events are not in different regulatory universes by accident — they are in different regulatory universes because we chose to put them there.</p>
+
+  <div class="compare-pair">
+    <div>
+      <h3>The factory spill</h3>
+      <div class="verdict">What follows, typically:</div>
+      <ul>
+        <li>Local news coverage within 48 hours</li>
+        <li>State environmental agency on-site inspection</li>
+        <li>Notice of violation; potential permit suspension</li>
+        <li>Civil and sometimes criminal liability for executives</li>
+        <li>Class-action litigation in the affected community</li>
+        <li>Mandatory cleanup with public progress reporting</li>
+        <li>Reputational damage taking years to repair</li>
+        <li>SEC disclosure obligations for publicly listed firms</li>
+        <li>Insurance loss triggering rate increases</li>
+      </ul>
+    </div>
+    <div>
+      <h3>The forestry harvest</h3>
+      <div class="verdict">What follows, typically:</div>
+      <ul>
+        <li>A press release describing the project as sustainable</li>
+        <li>Routine permit issuance under existing harvest plans</li>
+        <li>Certification logo affixed to the resulting product</li>
+        <li>Carbon-neutrality claim attached to derivative goods</li>
+        <li>No notice of violation</li>
+        <li>No SEC disclosure of the carbon flow</li>
+        <li>The forest replanted with a younger, lower-carbon stand</li>
+        <li>The "green claim" used in marketing for ten to twenty years</li>
+        <li>Critics framed as anti-progress</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>The two events do similar things, at scale, to similar quantities of carbon and soil. They face entirely different regulatory consequences. That asymmetry is not natural. It was constructed.</p>
+</section>
+
+<hr class="rule">
+
+<!-- ========== SECTION 6 — what is happening now ========== -->
+<section>
+  <span class="kicker">What is happening now</span>
+  <h2>It is starting to change. Slowly. In court.</h2>
+
+  <p>The carbon-claims regime that has held since the 1990s is beginning to crack — first at the consumer-protection edge, where green-marketing claims are being tested by class-action lawyers, then upstream at the corporate-disclosure level, then upstream again at the methodology level. The construction industry is several years behind tobacco, pharmaceuticals, and fossil fuels on the same trajectory. Greenwashing lawsuits globally roughly doubled between 2020 and 2025, reaching approximately 2,700 active cases.</p>
+
+  <p>A small sampling, all from public dockets and press records:</p>
+
+  <div class="case-list">
+    <div class="case-card">
+      <div class="case-status live">Active — appealed</div>
+      <h3>Dib v. Apple Inc.</h3>
+      <p>U.S. District Court, Northern District of California. First scientific challenge to a corporate "carbon neutral" marketing claim, based on forestry-offset projects in Kenya and China. Dismissed February 2026; plaintiffs have appealed to the Ninth Circuit.</p>
+      <div class="case-source">Source: Court filings; Trellis Group coverage 2025</div>
+    </div>
+    <div class="case-card">
+      <div class="case-status won">Won by plaintiffs</div>
+      <h3>Deutsche Umwelthilfe v. Apple</h3>
+      <p>Frankfurt Regional Court, Germany. August 2024 ruling: Apple's "CO2 neutral" claims on Apple Watch were misleading because the underlying eucalyptus-plantation offsets in Paraguay had land leases only to 2029.</p>
+      <div class="case-source">Source: Frankfurt Regional Court ruling, August 2024</div>
+    </div>
+    <div class="case-card">
+      <div class="case-status live">Pending</div>
+      <h3>Ecojustice et al. v. SFI</h3>
+      <p>Eight Canadian environmental organisations filed a Competition Bureau complaint against the Sustainable Forestry Initiative (SFI), North America's largest forest certification system, alleging deceptive "sustainability" marketing.</p>
+      <div class="case-source">Source: Greenpeace Canada release; Ecojustice case file</div>
+    </div>
+    <div class="case-card">
+      <div class="case-status live">Pending</div>
+      <h3>Class action vs. Procter &amp; Gamble (Charmin)</h3>
+      <p>Class-action lawsuit alleges P&amp;G's "responsible forestry" claims for Charmin toilet paper were misleading because sourcing came from Canadian boreal forest with documented biodiversity impact.</p>
+      <div class="case-source">Source: Provenance retail litigation survey 2025</div>
+    </div>
+    <div class="case-card">
+      <div class="case-status live">Active</div>
+      <h3>State of Maine v. Fossil Fuel Defendants</h3>
+      <p>Filed November 2024; removed to federal court January 2025. Includes greenwashing allegations alongside damages claims. Pattern increasingly being applied to forestry / land-use sector claims.</p>
+      <div class="case-source">Source: Harvard Corp. Governance Climate Litigation Trends 2025</div>
+    </div>
+    <div class="case-card">
+      <div class="case-status live">In force</div>
+      <h3>EU Green Claims Directive</h3>
+      <p>Coming into force September 2026. Restricts the use of terms like "carbon neutral," "climate positive," and "net zero" in EU advertising without rigorous substantiation. Pattern emerging in UK and parts of Australia.</p>
+      <div class="case-source">Source: European Commission DG ENV</div>
+    </div>
+  </div>
+
+  <p style="margin-top: 1.25rem;">The forestry and mass timber industries have not, as of the most recent public records, been a primary target of these cases. The Apple-style litigation is mostly concerned with carbon-offset quality. The next wave, already visible in the EU Green Claims Directive and in the SFI Competition Bureau filing, will press on the underlying carbon-accounting standards directly. The configuration DRL documents is the configuration those cases will eventually have to contend with.</p>
+</section>
+
+<hr class="rule">
+
+<!-- ========== SECTION 7 — what you can do ========== -->
+<section>
+  <span class="kicker">If you want to do something</span>
+  <h2>Some doors</h2>
+
+  <p>This is not an action page. We do not raise money, we do not lobby, we do not have a mailing list. But people sometimes ask what they can do after reading the recomputations on this site. Here are doors, not instructions.</p>
+
+  <h3>Read more</h3>
+  <p>Start with the <a href="../corrected-ledger/index.html">Corrected Ledger</a> — building-by-building recomputations of award-winning timber, concrete, and steel projects. Each page is around a fifteen-minute read. Each one carries a downloadable Reproduction Sheet so the math can be checked. Then the <a href="../codex.html">DRL Thesis Codex</a> if you want the full scientific argument.</p>
+
+  <h3>Support a conservation organisation</h3>
+  <p>These groups are doing different parts of the work. None of them are affiliated with this site. Listed alphabetically, not by ranking.</p>
+
+  <div class="org-grid">
+    <div class="org-card">
+      <a href="https://www.audubon.org/" rel="noopener">Audubon Society</a>
+      <p>Bird-centred but landscape-scale forest protection in North America.</p>
+    </div>
+    <div class="org-card">
+      <a href="https://ecojustice.ca/" rel="noopener">Ecojustice (Canada)</a>
+      <p>Canada's largest environmental law charity. Behind the SFI greenwashing case.</p>
+    </div>
+    <div class="org-card">
+      <a href="https://www.nrdc.org/" rel="noopener">NRDC</a>
+      <p>Natural Resources Defense Council. Active on forest carbon, boreal, sourcing.</p>
+    </div>
+    <div class="org-card">
+      <a href="https://rainforestfoundation.org/" rel="noopener">Rainforest Foundation</a>
+      <p>Indigenous-led forest protection in the Amazon, Congo basin, Indonesia.</p>
+    </div>
+    <div class="org-card">
+      <a href="https://www.sierraclub.org/" rel="noopener">Sierra Club</a>
+      <p>U.S.-wide forest-policy advocacy and litigation history.</p>
+    </div>
+    <div class="org-card">
+      <a href="https://www.nature.org/" rel="noopener">The Nature Conservancy</a>
+      <p>Land acquisition for permanent forest protection; carbon project rigour.</p>
+    </div>
+    <div class="org-card">
+      <a href="https://www.wri.org/" rel="noopener">World Resources Institute</a>
+      <p>Global Forest Watch, satellite monitoring of deforestation in real time.</p>
+    </div>
+    <div class="org-card">
+      <a href="https://www.amazonconservation.org/" rel="noopener">Amazon Conservation</a>
+      <p>Primary-forest protection in the Amazon basin, where the math is largest.</p>
+    </div>
+    <div class="org-card">
+      <a href="https://www.dogwoodalliance.org/" rel="noopener">Dogwood Alliance</a>
+      <p>U.S. Southeast — the forest region that the loblolly plantation wave covered.</p>
+    </div>
+  </div>
+
+  <h3>File a public comment</h3>
+  <p>U.S. federal agencies — including the EPA, USDA Forest Service, and SEC — accept public comment on proposed rules. Comments enter the docket and are part of the public record. If a proposed rule touches on forest carbon accounting, building LCA methodology, or climate disclosure, public comments are read by agency staff. <a href="https://www.regulations.gov/" rel="noopener">regulations.gov</a> is the entry point.</p>
+
+  <h3>Use the calculator on your own building</h3>
+  <p>If your organisation is involved in a building project — institutional, commercial, residential — and the project is making a carbon claim, the <a href="../corrected-ledger/index.html">Corrected Ledger</a> mini-calculators are reusable. The full <em>Disclosure-Ready Calculator</em> is in development; when it ships, every input on every building page will pre-populate it. The point is to make the recomputation easy enough that asking the question becomes routine.</p>
+</section>
+
+<hr class="rule-double">
+
+<!-- ========== CLOSING ========== -->
+<section class="closing-block">
+  <p class="lead">"If I don't cut down a tree, what happens?<br>Same question as: <em>if I don't kill a whale?</em>"</p>
+
+  <p class="body">A whale that is not killed continues, for decades, to fertilise the ocean and transport nutrients across thousands of kilometres of empty sea. A tree that is not felled continues, for centuries, to lay down soil carbon, suppress erosion, hold rainfall, host species we have not yet named. The question of what a single tree or a single whale is <em>for</em> turns out to be the wrong question. They are not for anything. They are part of a system that we are also part of. The forest makes rain. The whale fertilises the reef. The beetle works for the tree. The plant suppresses a virus we have not yet sequenced. We are not separate from this. We are dependent on it.</p>
+
+  <p class="body" style="margin-top: 1.5rem;">A timber yard cannot replicate any of these functions, no matter how efficiently it processes the trees it removes. The disclosure boundary we have inherited makes those functions invisible because they could not be priced. Making them visible is the first thing this site is for. Whether they then get priced — or protected by something other than price — is a question for the next generation of standards, the next generation of legislators, the next generation of auditors. The work of this site is to make sure the next generation is starting from the right number.</p>
+
+  <p class="body" style="margin-top: 1.5rem; font-style: italic; color: var(--ink-faded);">— Murphy O'Neal</p>
+</section>
+
+</main>
+
+<footer class="colophon">
+  <p>Every figure on every page of this site is sourced. Every emission factor is named. Every citation is to a public document. If anything here is wrong, please write — the feedback channel logs every submission with timestamp.</p>
+  <p style="margin-top: 0.5rem;"><a href="../corrected-ledger/index.html">Read the Corrected Ledger →</a> &nbsp;·&nbsp; <a href="../codex.html">Read the DRL Codex →</a></p>
+</footer>
+
+</body>
+</html>
