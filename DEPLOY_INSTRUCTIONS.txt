@@ -1,61 +1,150 @@
-DRL SITE — VERSION 2.1 — DEPLOYMENT INSTRUCTIONS
+DRL SITE — VERSION 2.3 — DEPLOYMENT INSTRUCTIONS
 ================================================
-Build date: 11 May 2026
+Build date: 12 May 2026
 Author: Murphy O'Neal
-Status: Built and ready to deploy. Counsel review still pending.
+Status: Built and ready to deploy.
 
-WHAT CHANGED FROM v2 → v2.1
----------------------------
-Added a hero photograph to the home page (index.html only).
 
-  Photo: misty forest over still water, by Richard Burlton on Unsplash
-  License: free for commercial use, no attribution required (credited
-           in the home page footer as a courtesy)
-  Source: served directly from Unsplash CDN (images.unsplash.com)
-          — no image file bundled with the site, no rights issue, no
-          extra hosting load on Cloudflare
+WHAT CHANGED FROM v2.1 -> v2.3
+------------------------------
+Two distinct categories of change since the v2.1 live site:
 
-The photo sits BEHIND the headline with a paper-toned overlay so the
-editorial typography stays readable. On the right side of the hero
-the photo fades through; on the left side the paper background is
-near-opaque so the text has full contrast.
+  CATEGORY 1: DOCUMENT REPLACEMENTS
+    Two of the seven published PDFs in /docs/ have been replaced
+    with their legal-redlined clean versions. The .docx for the
+    Configuration as Authority brief was rebuilt to match.
 
-If you want to change the photo later, edit /assets/explainer.css
-and search for "curtain-hero--photo" — the URL is in two places (one
-for desktop, one for mobile). Replace both URLs with any other
-Unsplash photo URL.
+      /docs/Reagan-Forestry-Legacy-v3.2.pdf
+        Was: 31 pages, 1.1 MB — contained the lawyer's redline as
+             tracked changes that had never been accepted, so the
+             rendered PDF showed both the original aggressive
+             language and the softened version side-by-side
+        Now: 27 pages, 313 KB — tracked changes accepted, plus
+             eight pieces of untracked legacy language in
+             headings and body paragraphs corrected to match the
+             same posture (monopoly -> asymmetry; shell game ->
+             terminology sequence; laundering -> terminology
+             shift; damning -> Why the Distinction Matters)
+        Verified: 0 instances of monopoly, shell game, laundering,
+                  gutted, structurally excluded, structurally
+                  forecloses, deliberately blurred, or damning.
+
+      /docs/DRL-Configuration-as-Authority.pdf
+      /docs/DRL-Configuration-as-Authority.docx
+        Was: 17 pages, 167 KB — v1.0, never put through the
+             same legal-redline pass the Reagan paper received.
+             Used the religious-authority frame as its organising
+             structure: doctrine (15x), clergy (7x), congregation
+             (4x), denominations (3x), tithe loop (3x), religion
+             /religious (2x), sacred-text (1x).
+        Now: 15 pages, 143 KB — v1.1 (May 2026, legal-review pass
+             applied). Religious-authority frame recast as the
+             academic vocabulary the brief itself names in §1:
+             "epistemic community" and "private regulatory
+             regime." Every fact, table, source, and section is
+             preserved. Only the rhetorical frame changed.
+        Verified: 0 instances of monopoly, clergy, denomination,
+                  tithe, congregation, religious, religion, or
+                  sacred. "State action doctrine" appears once in
+                  §3 — that is the antitrust legal-doctrine term
+                  (Parker v. Brown), kept on purpose.
+
+    No other documents in /docs/ changed:
+      DRL-Codex-v4.3.0.pdf                          — unchanged
+      DRL-Section-7.4-NECO2-Worked-Example.pdf      — unchanged
+      Lumber-PPI-Price-Configuration-1981-2026.pdf  — unchanged
+      Reagan-Vertical-Timeline-1981-2030.pdf        — unchanged
+
+  CATEGORY 2: HTML, NAV, AND SEO HYGIENE (carried from v2.2)
+    Defects fixed:
+      1. methodology.html had class="active" on the About nav
+         link. Removed.
+      2. pages/behind-the-curtain.html had class="active" on the
+         Corrected Ledger nav link. Removed.
+      3. companions.html download cards each had a duplicated
+         <h2> for the file title. Replaced with
+         <p class="download-title">. Same fix applied to single
+         download cards on codex.html and feedback.html.
+      4. codex.html previously said "Three companion documents
+         extend the Codex" and listed three. There are five.
+         Now lists all five.
+      5. Page counts and file sizes on companions.html,
+         codex.html, and index.html have been updated to match
+         the corrected document files in Category 1 above.
+
+    Orphan-page fix:
+      Methodology, Feedback, and Legal pages had no inbound links
+      from anywhere on the site. A secondary footer nav has been
+      added to every page (under the existing footer prose):
+
+        Methodology . Feedback . Legal
+
+      Smaller monospaced row, separated by a dashed rule from the
+      main footer text. The masthead nav is unchanged.
+
+    SEO and discoverability infrastructure:
+      Every page now carries:
+        - canonical URL pointing to fullboundarycarbon.org (not
+          the .pages.dev fallback) — prevents Google indexing
+          the same page under two URLs and splitting authority
+        - Open Graph tags (og:title, og:description, og:url,
+          og:type, og:site_name) — link previews on LinkedIn,
+          X, Bluesky, Slack, and email will now show proper
+          title/description cards instead of plain URLs
+        - Twitter Card tags
+        - favicon link
+
+      Codex page additionally carries a JSON-LD ScholarlyArticle
+      block so Google Scholar and structured-data crawlers can
+      recognise the Codex as a citable academic work. Home page
+      carries a JSON-LD WebSite block.
+
+      New root files:
+        - sitemap.xml — every public page, with priorities
+          and lastmod dates
+        - robots.txt — allow all crawlers, point to sitemap
+        - 404.html — branded not-found page
+
+    Favicon:
+      Minimal SVG monogram ("DRL" in oxblood on cream) served
+      from /assets/favicon.svg. Browsers will show it in tabs
+      and bookmarks. SVG so it scales to any pixel density.
 
 
 WHAT IS IN THIS BUILD
 ---------------------
-The site is now a full public-facing research site, not a one-feature
-ledger. Everything you asked for at the not-yet-legal-reviewed level
-is present:
+  /  index.html                        Home (with photo hero, JSON-LD)
+  /  codex.html                        Codex landing + full Codex download
+  /  companions.html                   Five companions: Reagan, timeline,
+                                       chart, NECO2 extract, Config Authority
+  /  about.html                        Murphy bio + disclosures
+  /  resources.html                    Curated directory of calculators,
+                                       standards, regulators
+  /  methodology.html                  Plain-language DRL methodology
+  /  feedback.html                     Submission channel + chain-of-notice
+  /  legal.html                        Terms, copyright, disclaimers (DRAFT)
+  /  404.html                          Branded not-found page
+  /  pages/behind-the-curtain.html     Explainer
+  /  corrected-ledger/                 Ledger with embedded calculators
+  /  docs/                             All downloadable documents
+  /  robots.txt                        New (since v2.1)
+  /  sitemap.xml                       New (since v2.1)
+  /  assets/favicon.svg                New (since v2.1)
 
-  /  index.html                  Home (with photo hero)
-  /  codex.html                  Codex landing + full Codex download
-  /  companions.html             Reagan paper + timeline + chart + brief + NECO2
-  /  about.html                  Murphy bio + not-paid statement + disclosures
-  /  resources.html              Curated directory of calculators/standards/regulators
-  /  methodology.html            Plain-language DRL methodology with citations
-  /  feedback.html               Submission channel + chain-of-notice
-  /  legal.html                  Terms, copyright, disclaimers (DRAFT)
-  /  pages/behind-the-curtain.html   Explainer (was already live, nav updated)
-  /  corrected-ledger/           Ledger (was already live, nav updated)
-  /  docs/                       All downloadable documents
 
 DOCUMENTS PUBLISHED FOR DOWNLOAD
 --------------------------------
-  /docs/DRL-Codex-v4.3.0.pdf                            136 pp, 1.6 MB
-  /docs/Reagan-Forestry-Legacy-v3.2.pdf                  31 pp, 1.1 MB
-  /docs/Reagan-Vertical-Timeline-1981-2030.pdf            8 pp,  32 KB
-  /docs/Lumber-PPI-Price-Configuration-1981-2026.pdf      1 pg,  71 KB
-  /docs/DRL-Section-7.4-NECO2-Worked-Example.pdf          9 pp, 622 KB
-  /docs/DRL-Configuration-as-Authority.pdf              PDF, 167 KB
-  /docs/DRL-Configuration-as-Authority.docx             Word source
+  /docs/DRL-Codex-v4.3.0.pdf                            136 pp, 1.6 MB  (unchanged)
+  /docs/Reagan-Forestry-Legacy-v3.2.pdf                  27 pp, 313 KB  (REPLACED — clean)
+  /docs/Reagan-Vertical-Timeline-1981-2030.pdf            8 pp,  32 KB  (unchanged)
+  /docs/Lumber-PPI-Price-Configuration-1981-2026.pdf      1 pg,  71 KB  (unchanged)
+  /docs/DRL-Section-7.4-NECO2-Worked-Example.pdf          9 pp, 622 KB  (unchanged)
+  /docs/DRL-Configuration-as-Authority.pdf              15 pp, 143 KB  (REPLACED — v1.1)
+  /docs/DRL-Configuration-as-Authority.docx               Word source   (REPLACED — v1.1)
 
-WHAT STILL DOES NOT EXIST (deliberately)
-----------------------------------------
+
+WHAT STILL DOES NOT EXIST (deliberately, unchanged from v2.1)
+-------------------------------------------------------------
   /political-connections.html              Counsel-gated. Not built.
   /appendices/appendix-w.pdf               Counsel-gated. Not uploaded.
   /appendices/appendix-z.pdf               Counsel-gated. Not uploaded.
@@ -63,35 +152,28 @@ WHAT STILL DOES NOT EXIST (deliberately)
 
 HOW TO DEPLOY (GitHub Desktop, one-shot)
 ----------------------------------------
-You already have GitHub Desktop set up and `murphyoneal/fullboundarycarbon`
-cloned locally to:
+Same procedure as v2.1 / v2.2. Repo at:
     C:\Users\<you>\Documents\GitHub\fullboundarycarbon\
-
-The cleanest sequence:
 
   Step 1. Open File Explorer to your local repo folder.
 
   Step 2. Delete (or move out) everything currently in that folder
-          EXCEPT the .git folder (which Windows usually hides — if
-          you don't see it, that's fine, just leave it alone).
-          The old index.html and any other v1 files need to be gone
-          since v2.1 replaces them.
+          EXCEPT the .git folder.
 
-  Step 3. Extract site-v2.zip on your computer. Open the extracted
-          site-v2 folder so you can see the contents: assets/, docs/,
-          pages/, corrected-ledger/, reproduction-sheets/, and the
-          loose .html files.
+  Step 3. Extract site-v2-3.zip on your computer. Open the extracted
+          site-v2-3 folder so you can see the contents.
 
-  Step 4. Select ALL the contents of the extracted site-v2 folder
+  Step 4. Select ALL the contents of the extracted site-v2-3 folder
           (Ctrl+A), copy (Ctrl+C), paste (Ctrl+V) into your GitHub
           repo local folder.
 
-  Step 5. Open GitHub Desktop. It will show many changes — additions,
-          modifications, possibly some deletions of v1 files. That's
-          correct.
+  Step 5. Open GitHub Desktop. It will show many changes — additions
+          (sitemap.xml, robots.txt, 404.html, assets/favicon.svg if
+          not already deployed) and modifications to multiple .html
+          files plus three replaced files in /docs/.
 
   Step 6. In the Summary box at the bottom type:
-              "Site v2.1: full content, all docs, photo hero"
+              "Site v2.3: legal redline applied; HTML hygiene; SEO"
           Click "Commit to main".
 
   Step 7. Click "Push origin" at the top.
@@ -102,52 +184,80 @@ The cleanest sequence:
 
 WHAT TO TEST AFTER DEPLOY
 -------------------------
-  [ ] Home page (/) loads. PHOTO LOADS in the hero. Headline is
-      readable on top of the photo. Looks like an editorial
-      publication, not a marketing brochure.
-  [ ] Click each of the four "doors" — all four pages open.
-  [ ] Codex download works (PDF opens to a real Codex).
-  [ ] All five companion downloads work.
-  [ ] Resources page links open in new tabs to the right places.
-  [ ] About page reads correctly.
-  [ ] Behind the Curtain (/pages/behind-the-curtain.html) still works.
-  [ ] Corrected Ledger pages still calculate correctly.
-  [ ] Mobile view: the photo is still visible but lighter, headline
-      readable. Test on your phone.
+  Document checks (the priority for v2.3):
+  [ ] Download the Reagan paper from companions.html.
+      Confirm 27 pages, NOT 31. Open the PDF and Ctrl-F search
+      for "monopoly" — should return zero hits. Same for "shell
+      game" and "laundering."
+  [ ] Download the Configuration as Authority PDF.
+      Confirm 15 pages, NOT 17. Ctrl-F search for "clergy" —
+      zero hits. Same for "denominations" and "tithe."
+      Footer should read "v1.1 — May 2026".
+
+  Site checks (these were already in v2.2):
+  [ ] Browser tab now shows the DRL favicon (small monogram).
+  [ ] Visit any page — the footer has a second line of three
+      links: Methodology . Feedback . Legal. Confirm each
+      clicks through to the right page.
+  [ ] Visit methodology.html directly. Confirm no nav item is
+      incorrectly highlighted in the masthead.
+  [ ] Visit companions.html. Confirm the page reads cleanly,
+      five download cards each show title + page count + size,
+      Reagan card shows 27 pages / 313 KB, Configuration as
+      Authority card shows 15 pages / 143 KB.
+  [ ] Visit codex.html and scroll to "What sits alongside the
+      Codex". Confirm five companions are listed, not three.
+  [ ] Visit a URL that does not exist, e.g.
+        https://fullboundarycarbon.org/this-does-not-exist
+      Confirm the branded 404.html renders.
+  [ ] Open https://fullboundarycarbon.org/sitemap.xml — should
+      show structured XML.
+  [ ] Open https://fullboundarycarbon.org/robots.txt — should
+      show User-agent: * and the sitemap line.
+  [ ] Paste any page URL into LinkedIn's post composer or
+      Bluesky. The preview should show title + description +
+      site name instead of a plain URL.
 
 
-IF YOU DON'T LIKE THE PHOTO
----------------------------
-Tell me and I'll point to a different one. The selected photo (Richard
-Burlton on Unsplash) was chosen because the search description matched
-your brief (forest + water + mist), the composition has space on the
-left for headline text, and the colour palette doesn't clash with the
-site's paper-and-oxblood scheme. If it looks wrong when you see it
-rendered, the swap is a one-line CSS change.
+SEO NOTES FOR POST-DEPLOY (optional, can be done later)
+-------------------------------------------------------
+  - Submit sitemap to Google Search Console:
+      https://search.google.com/search-console
+    Add property: https://www.fullboundarycarbon.org
+    Sitemaps tab -> submit /sitemap.xml
+
+  - Submit sitemap to Bing Webmaster Tools:
+      https://www.bing.com/webmasters
+    Same procedure.
 
 
-COUNSEL REVIEW PRIORITY ORDER
------------------------------
-Same as v2:
-  1. /docs/Reagan-Forestry-Legacy-v3.2.pdf (Sections 4, 5, 9, 10, 12)
-  2. /docs/DRL-Codex-v4.3.0.pdf (Section 6 onwards)
-  3. /about.html (disclosure of competitive interest)
-  4. /pages/behind-the-curtain.html (Sections 3 and 5)
-  5. /corrected-ledger/timber/*/index.html (Block 02 quotes)
-  6. /legal.html (currently DRAFT)
-  7. /resources.html (footer disclaimer)
+COUNSEL REVIEW PRIORITY ORDER (revised — Reagan and Config Authority cleared)
+-----------------------------------------------------------------------------
+The two documents at top of the v2.1 priority list have now had
+the legal-redline pass applied at the source-document level.
+Remaining priority order:
+
+  1. /docs/DRL-Codex-v4.3.0.pdf (Section 6 onwards)
+  2. /about.html (disclosure of competitive interest)
+  3. /pages/behind-the-curtain.html (Sections 3 and 5)
+  4. /corrected-ledger/timber/*/index.html (Block 02 quotes)
+  5. /legal.html (currently DRAFT)
+  6. /resources.html (footer disclaimer)
+
+The Reagan paper v3.2 and the Configuration as Authority v1.1 are
+both now in the same auditor's-voice register: configuration
+described, intent not characterized, public-record sources only.
+The legal-redline discipline applied at the Reagan v3.2 level is
+also the standard the Configuration brief now meets.
 
 
-CUSTOM DOMAIN ATTACH (5 minutes)
---------------------------------
-After v2.1 is deployed and tested:
-  1. Cloudflare dashboard → Workers & Pages → fullboundarycarbon
-  2. Custom domains tab → Set up a custom domain
-  3. Type: fullboundarycarbon.org → Continue
-  4. Cloudflare detects you own the domain → click Activate
+CUSTOM DOMAIN ATTACH (unchanged from v2.1)
+------------------------------------------
+If www.fullboundarycarbon.org is not yet attached:
+  1. Cloudflare dashboard -> Workers & Pages -> fullboundarycarbon
+  2. Custom domains tab -> Set up a custom domain
+  3. Type: fullboundarycarbon.org -> Continue
+  4. Cloudflare detects you own the domain -> click Activate
   5. Repeat for www.fullboundarycarbon.org
-
-DNS propagates within 60 seconds since your domain is already on
-Cloudflare.
 
 — End of deploy instructions —

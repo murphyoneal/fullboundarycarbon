@@ -372,6 +372,17 @@
 
 .firstperson p:last-of-type { margin-bottom: 0; }
 
+.firstperson .download-title {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-style: normal;
+  color: var(--ink);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
 .firstperson .sig {
   font-family: var(--serif);
   font-style: italic;

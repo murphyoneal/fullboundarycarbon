@@ -573,6 +573,18 @@ footer.colophon {
 
 footer.colophon a { color: var(--ink-soft); border: none; }
 
+.footer-nav-secondary {
+  margin-top: 1.5rem !important;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--rule-faint, var(--rule));
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faded);
+}
+
+.footer-nav-secondary a { color: var(--ink-faded) !important; }
+
 /* ---- mobile ---- */
 
 @media (max-width: 720px) {
