@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Full-Boundary Carbon Calculator — Divergent Resource Logic</title>
+<meta name="description" content="Calculate the full-boundary carbon footprint of a building under the DRL framework. Compares standard EPD accounting against full-boundary methodology including soil organic carbon efflux, end-of-life methane, and foregone sequestration.">
+<link rel="canonical" href="https://www.fullboundarycarbon.org/calculator.html">
+<meta property="og:title" content="Full-Boundary Carbon Calculator — DRL">
+<meta property="og:description" content="See what standard EPD accounting excludes. Toggle the three DRL liabilities on or off. Design for disassembly and watch the numbers change.">
+<meta property="og:url" content="https://www.fullboundarycarbon.org/calculator.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+/* ── Calculator-specific styles ── */
+.calc-page { max-width: 52rem; margin: 0 auto; }
+
+.mode-bar {
+  display: inline-flex;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.mode-btn {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.mode-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.calc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.calc-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media (max-width: 600px) {
+  .calc-grid-2, .calc-grid-3 { grid-template-columns: 1fr; }
+}
+
+.calc-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.calc-field label {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+.calc-field select,
+.calc-field input[type=number] {
+  font-family: var(--serif);
+  font-size: 1rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 2px;
+  width: 100%;
+}
+.calc-field select:focus,
+.calc-field input:focus { outline: 2px solid var(--oxblood); outline-offset: 1px; }
+
+.slider-block { margin-bottom: 1.25rem; }
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+}
+.slider-header span { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-soft); }
+.slider-header strong { font-family: var(--mono); font-size: 0.9rem; color: var(--ink); }
+input[type=range] { width: 100%; accent-color: var(--oxblood); }
+
+/* Master toggle */
+.master-toggle-card {
+  border: 1px solid var(--rule);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.master-toggle-card h3 {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 0.2rem;
+}
+.master-toggle-card p {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.toggle-pair {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+.toggle-pair span {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.toggle-pair span.on { color: var(--oxblood); font-weight: 600; }
+
+/* Toggle switch */
+.tog { position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0; display: inline-block; }
+.tog input { opacity: 0; width: 0; height: 0; position: absolute; }
+.tog-track { position: absolute; inset: 0; border-radius: 24px; background: var(--rule); transition: background 0.2s; }
+.tog input:checked ~ .tog-track { background: var(--oxblood); }
+.tog-thumb { position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; border-radius: 50%; background: white; transition: left 0.18s; pointer-events: none; }
+.tog input:checked ~ .tog-thumb { left: 24px; }
+
+/* Liability rows */
+.liability-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rule-faint);
+  gap: 1rem;
+}
+.liability-row:last-child { border-bottom: none; }
+.liability-name {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.liability-src {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+.liability-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.liability-val {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Results */
+.results-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+@media (max-width: 500px) { .results-row { grid-template-columns: 1fr; } }
+
+.result-card {
+  border: 1px solid var(--rule);
+  padding: 1rem 1.25rem;
+}
+.result-card.highlight { border-color: var(--oxblood); }
+.result-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
+}
+.result-number {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+.result-number.drl-red { color: var(--oxblood); }
+.result-number.design-green { color: #2d6a2d; }
+.result-sub {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin-top: 0.3rem;
+}
+
+/* Gap bars */
+.gap-bars { margin: 0.5rem 0 1.5rem; }
+.gap-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin-bottom: 3px;
+}
+.bar-track {
+  height: 6px;
+  border-radius: 2px;
+  background: var(--rule-faint);
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.bar-fill { height: 100%; border-radius: 2px; transition: width 0.35s; }
+.bf-std { background: var(--ink-soft); }
+.bf-drl { background: var(--oxblood); }
+.bf-design { background: #2d6a2d; }
+
+/* Breakdown table */
+.breakdown { margin-top: 1rem; }
+.bk-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--rule-faint);
+  font-family: var(--serif);
+  font-size: 0.9rem;
+}
+.bk-row:last-child { border-bottom: none; padding-top: 0.6rem; border-top: 1px solid var(--rule); }
+.bk-lbl { color: var(--ink-soft); }
+.bk-val { font-weight: 600; color: var(--ink); }
+.bk-val.red { color: var(--oxblood); }
+.bk-val.green { color: #2d6a2d; }
+.bk-val.muted { color: var(--ink-soft); font-weight: 400; font-style: italic; }
+
+/* Design for disassembly callout */
+.design-callout {
+  border-left: 3px solid #2d6a2d;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: var(--paper);
+}
+.design-callout p {
+  font-family: var(--serif);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* Materials comparison */
+.mat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+.mat-card {
+  border: 1px solid var(--rule);
+  padding: 0;
+  overflow: hidden;
+}
+.mat-card.timber { border-color: var(--oxblood); }
+.mat-card.aluminium { border-color: #185F9E; }
+.mat-head {
+  padding: 0.75rem 1rem 0.6rem;
+  border-bottom: 1px solid var(--rule-faint);
+}
+.mat-head h3 {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 0.15rem;
+}
+.mat-subtype {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+}
+.mat-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 0.4rem; }
+.mbadge {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+.mbadge-timber { background: #f5e8e8; color: var(--oxblood); }
+.mbadge-neutral { background: var(--rule-faint); color: var(--ink-soft); }
+.mbadge-circ { background: #e8f5e8; color: #2d6a2d; }
+.mbadge-al { background: #e8f0f8; color: #185F9E; }
+.mat-body { padding: 0.75rem 1rem; }
+.mat-fig-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rule-faint);
+  font-size: 0.85rem;
+}
+.mat-fig-row:last-child { border-bottom: none; }
+.mat-fig-lbl { font-family: var(--serif); color: var(--ink-soft); }
+.mat-fig-val { font-family: var(--mono); font-weight: 600; }
+.mfv-red { color: var(--oxblood); }
+.mfv-muted { color: var(--ink-soft); font-weight: 400; }
+.mfv-ink { color: var(--ink); }
+.mfv-blue { color: #185F9E; }
+.mfv-green { color: #2d6a2d; }
+.mat-total {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--rule-faint);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.88rem;
+}
+.mat-total-lbl { font-family: var(--serif); color: var(--ink-soft); }
+.mat-total-val { font-family: var(--mono); font-weight: 600; }
+.mtv-red { color: var(--oxblood); }
+.mtv-muted { color: var(--ink-soft); }
+.mtv-blue { color: #185F9E; }
+
+/* Circ section */
+.circ-section {
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--rule-faint);
+}
+.circ-title {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
+}
+.circ-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 0.2rem 0;
+}
+.circ-lbl { font-family: var(--serif); color: var(--ink-soft); }
+.circ-val { font-family: var(--mono); font-weight: 600; }
+.cv-red { color: var(--oxblood); }
+.cv-muted { color: var(--ink-soft); }
+.cv-green { color: #2d6a2d; }
+.cv-blue { color: #185F9E; }
+.mini-bar-track { height: 4px; border-radius: 2px; background: var(--rule-faint); overflow: hidden; margin: 0.4rem 0 0.1rem; }
+.mini-bar-fill { height: 100%; border-radius: 2px; }
+
+/* Summary table */
+.summary-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 1rem 0; }
+.summary-table th {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+}
+.summary-table td {
+  font-family: var(--serif);
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--rule-faint);
+  color: var(--ink);
+  vertical-align: top;
+}
+.summary-table tr:last-child td { border-bottom: none; }
+.td-mat { font-weight: 600; }
+.td-fail { color: var(--oxblood); }
+.td-pass { color: #2d6a2d; }
+.td-best { color: #185F9E; }
+.td-muted { color: var(--ink-soft); }
+.spill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; padding: 2px 6px; border-radius: 2px; }
+.sp-fail { background: #f5e8e8; color: var(--oxblood); }
+.sp-pass { background: #e8f5e8; color: #2d6a2d; }
+.sp-best { background: #e8f0f8; color: #185F9E; }
+.sp-mid { background: var(--rule-faint); color: var(--ink-soft); }
+
+/* Note */
+.calc-note {
+  font-family: var(--serif);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  border-left: 2px solid var(--rule);
+  padding: 0.75rem 1rem;
+  line-height: 1.6;
+  margin-top: 1.5rem;
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="masthead-title"><a href="index.html">Divergent Resource Logic <em>— DRL</em></a></div>
+  <nav class="masthead-nav">
+    <a href="index.html">Home</a>
+    <a href="codex.html">Codex</a>
+    <a href="companions.html">Companions</a>
+    <a href="calculator.html" class="active">Calculator</a>
+    <a href="resources.html">Resources</a>
+    <a href="about.html">About</a>
+  </nav>
+</header>
+
+<main id="main">
+
+<section class="lede">
+  <span class="kicker">Full-boundary carbon calculator</span>
+  <h1>Design better. Count everything.</h1>
+  <p class="standfirst">Standard EPD accounting stops counting at the edge of a tree. This calculator adds the three carbon liabilities that current standards exclude. Toggle between standard and full-boundary accounting. Adjust for disassembly and recyclability. See what better design choices do to the number.</p>
+</section>
+
+<hr class="rule">
+
+<div class="calc-page">
+
+<!-- ── MODE BAR ── -->
+<div class="mode-bar">
+  <button class="mode-btn active" id="btn-basic" onclick="setMode('basic')">Basic</button>
+  <button class="mode-btn" id="btn-adv" onclick="setMode('advanced')">Advanced</button>
+</div>
+
+<!-- ── BUILDING INPUTS ── -->
+<span class="kicker">Building inputs</span>
+<div class="calc-grid-2" style="margin-top:0.75rem">
+  <div class="calc-field">
+    <label>Structural system</label>
+    <select id="material" onchange="calc()">
+      <option value="clt">Mass timber — CLT</option>
+      <option value="glulam">Mass timber — Glulam</option>
+      <option value="sawn">Sawn timber (structural)</option>
+      <option value="concrete">Concrete (reinforced)</option>
+      <option value="steel">Steel (structural)</option>
+      <option value="aluminium">Aluminium (structural)</option>
+    </select>
+  </div>
+  <div class="calc-field">
+    <label>Timber species / region</label>
+    <select id="species" onchange="calc()">
+      <option value="radiata">NZ Radiata pine</option>
+      <option value="loblolly">SE US Loblolly pine</option>
+      <option value="douglas">BC Douglas fir</option>
+      <option value="spruce">Scandinavian spruce</option>
+    </select>
+  </div>
+</div>
+
+<div class="calc-grid-3">
+  <div class="calc-field">
+    <label>Floor area (m²)</label>
+    <input type="number" id="area" value="3000" min="100" max="100000" step="100" oninput="calc()">
+  </div>
+  <div class="calc-field">
+    <label>Storeys</label>
+    <input type="number" id="storeys" value="8" min="1" max="50" step="1" oninput="calc()">
+  </div>
+  <div class="calc-field">
+    <label>EOL landfill rate (%)</label>
+    <input type="number" id="landfill" value="65" min="0" max="100" step="5" oninput="calc()">
+  </div>
+</div>
+
+<!-- ── RECYCLABILITY / DESIGN FOR DISASSEMBLY ── -->
+<div class="slider-block">
+  <div class="slider-header">
+    <span>Design for disassembly — material recovery rate at EOL</span>
+    <strong id="recov-disp">5%</strong>
+  </div>
+  <input type="range" id="recovery" min="0" max="95" value="5" step="5" oninput="calc()">
+  <div class="design-callout" id="design-note" style="display:none">
+    <p id="design-note-text"></p>
+  </div>
+</div>
+
+<div class="slider-block">
+  <div class="slider-header">
+    <span>Social cost of carbon (EPA range $51–$190/t)</span>
+    <strong id="scc-disp">$190/t</strong>
+  </div>
+  <input type="range" id="scc" min="51" max="310" value="190" step="1" oninput="calc()">
+</div>
+
+<hr class="rule">
+
+<!-- ── BASIC PANEL ── -->
+<div id="basic-panel">
+  <div class="master-toggle-card">
+    <div>
+      <h3>Full-boundary accounting (DRL)</h3>
+      <p>Adds soil organic carbon efflux, end-of-life methane, and foregone sequestration — the three liabilities standard EPDs exclude.</p>
+    </div>
+    <div class="toggle-pair">
+      <span id="lbl-std">Standard</span>
+      <label class="tog">
+        <input type="checkbox" id="master-tog" checked onchange="syncMaster()">
+        <div class="tog-track"></div>
+        <div class="tog-thumb"></div>
+      </label>
+      <span class="on" id="lbl-drl">Full boundary</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADVANCED PANEL ── -->
+<div id="adv-panel" style="display:none">
+  <span class="kicker">Individual liability toggles</span>
+  <div style="margin-top:0.5rem">
+    <div class="liability-row">
+      <div>
+        <div class="liability-name">Soil organic carbon efflux</div>
+        <div class="liability-src">Manaaki Whenua S-Map · Scion LTSP · first-decade loss · k = 0.048 yr⁻¹</div>
+      </div>
+      <div class="liability-right">
+        <span class="liability-val" id="val-soc">—</span>
+        <label class="tog"><input type="checkbox" id="tog-soc" checked onchange="calc()"><div class="tog-track"></div><div class="tog-thumb"></div></label>
+      </div>
+    </div>
+    <div class="liability-row">
+      <div>
+        <div class="liability-name">End-of-life methane</div>
+        <div class="liability-src">EPA WARM v15 · NZ GHG Inventory HWP parameters · GWP₁₀₀ = 28 · adjusted for recovery rate</div>
+      </div>
+      <div class="liability-right">
+        <span class="liability-val" id="val-eol">—</span>
+        <label class="tog"><input type="checkbox" id="tog-eol" checked onchange="calc()"><div class="tog-track"></div><div class="tog-thumb"></div></label>
+      </div>
+    </div>
+    <div class="liability-row">
+      <div>
+        <div class="liability-name">Foregone sequestration (OCP)</div>
+        <div class="liability-src">Stephenson et al. Nature 2014 · Luyssaert 2008 · SCC-discounted NPV · plantation rotation assumed</div>
+      </div>
+      <div class="liability-right">
+        <span class="liability-val" id="val-ocp">—</span>
+        <label class="tog"><input type="checkbox" id="tog-ocp" checked onchange="calc()"><div class="tog-track"></div><div class="tog-thumb"></div></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── RESULTS ── -->
+<div class="results-row">
+  <div class="result-card">
+    <div class="result-label">Standard EPD boundary</div>
+    <div class="result-number" id="res-std">—</div>
+    <div class="result-sub">tCO₂e · EN 15804 / ISO 21930</div>
+  </div>
+  <div class="result-card highlight">
+    <div class="result-label">Full boundary (DRL)</div>
+    <div class="result-number drl-red" id="res-drl">—</div>
+    <div class="result-sub" id="res-drl-sub">tCO₂e · SOC + EOL CH₄ + OCP</div>
+  </div>
+</div>
+
+<div class="gap-bars">
+  <div class="gap-bar-label"><span>Standard boundary</span><span id="gap-pct">—</span></div>
+  <div class="bar-track"><div class="bar-fill bf-std" id="bar-std" style="width:40%"></div></div>
+  <div class="bar-track"><div class="bar-fill bf-drl" id="bar-drl" style="width:100%"></div></div>
+  <div class="gap-bar-label" style="margin-top:2px"><span>Full boundary (DRL)</span><span></span></div>
+</div>
+
+<!-- ── BREAKDOWN ── -->
+<div class="breakdown">
+  <span class="kicker">Breakdown</span>
+  <div class="bk-row"><span class="bk-lbl">A1–A5 embodied carbon (disclosed)</span><span class="bk-val" id="br-a1a5">—</span></div>
+  <div class="bk-row"><span class="bk-lbl">Biogenic storage credit (EPD −1/+1 convention)</span><span class="bk-val" id="br-bio">—</span></div>
+  <div class="bk-row"><span class="bk-lbl">Module D recovery credit</span><span class="bk-val green" id="br-modd">—</span></div>
+  <div class="bk-row"><span class="bk-lbl">Soil organic carbon efflux at harvest</span><span class="bk-val red" id="br-soc">—</span></div>
+  <div class="bk-row"><span class="bk-lbl">End-of-life methane (landfill fraction, adjusted for recovery)</span><span class="bk-val red" id="br-eol">—</span></div>
+  <div class="bk-row"><span class="bk-lbl">Foregone sequestration — opportunity carbon penalty</span><span class="bk-val red" id="br-ocp">—</span></div>
+  <div class="bk-row"><span class="bk-lbl" style="color:var(--ink); font-weight:600;">Full-boundary total</span><span class="bk-val red" id="br-total" style="font-size:1.1rem">—</span></div>
+</div>
+
+</div><!-- end calc-page -->
+
+<hr class="rule">
+
+<!-- ── MATERIALS COMPARISON ── -->
+<section>
+  <span class="kicker">Pre and post — standard vs full-boundary by material</span>
+  <h2>The asymmetry, made visible</h2>
+  <p>Steel, concrete, and aluminium carry no biogenic liabilities. Their full-boundary figures are identical to their standard figures. Timber is the only structural material whose carbon accounting changes under full-boundary rules — and the only one designed for single use at end of life.</p>
+
+  <div class="mat-grid">
+
+    <div class="mat-card timber">
+      <div class="mat-head">
+        <h3>Mass timber (CLT)</h3>
+        <div class="mat-subtype">NZ Radiata pine · 3,000 m² · 8 storeys</div>
+        <div class="mat-badges">
+          <span class="mbadge mbadge-timber">3 DRL liabilities</span>
+          <span class="mbadge mbadge-neutral">~5% recyclable</span>
+        </div>
+      </div>
+      <div class="mat-body">
+        <div class="mat-fig-row"><span class="mat-fig-lbl">Standard EPD</span><span class="mat-fig-val mfv-ink">−510 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">+ SOC efflux</span><span class="mat-fig-val mfv-red">+680 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">+ EOL methane</span><span class="mat-fig-val mfv-red">+290 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">+ Foregone seq.</span><span class="mat-fig-val mfv-red">+840 t</span></div>
+        <div class="mat-total"><span class="mat-total-lbl">Full-boundary total</span><span class="mat-total-val mtv-red">+1,300 t</span></div>
+        <div class="circ-section">
+          <div class="circ-title">End-of-life circularity</div>
+          <div class="circ-row"><span class="circ-lbl">Recovery rate</span><span class="circ-val cv-red">~5%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Landfill fraction</span><span class="circ-val cv-red">65%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Module D credit</span><span class="circ-val cv-muted">None</span></div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:5%; background:var(--oxblood)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mat-card timber">
+      <div class="mat-head">
+        <h3>Mass timber — designed for disassembly</h3>
+        <div class="mat-subtype">NZ Radiata pine · 3,000 m² · 8 storeys · 70% recovery</div>
+        <div class="mat-badges">
+          <span class="mbadge mbadge-timber">3 DRL liabilities</span>
+          <span class="mbadge mbadge-circ">70% recovery</span>
+        </div>
+      </div>
+      <div class="mat-body">
+        <div class="mat-fig-row"><span class="mat-fig-lbl">Standard EPD</span><span class="mat-fig-val mfv-ink">−510 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">+ SOC efflux</span><span class="mat-fig-val mfv-red">+680 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">+ EOL methane (reduced)</span><span class="mat-fig-val mfv-red">+88 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">+ Foregone seq.</span><span class="mat-fig-val mfv-red">+840 t</span></div>
+        <div class="mat-total"><span class="mat-total-lbl">Full-boundary total</span><span class="mat-total-val mtv-red">+1,098 t</span></div>
+        <div class="circ-section">
+          <div class="circ-title">End-of-life circularity</div>
+          <div class="circ-row"><span class="circ-lbl">Recovery rate</span><span class="circ-val cv-green">70%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Landfill fraction</span><span class="circ-val cv-green">~20%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Module D credit</span><span class="circ-val cv-muted">Partial (reuse)</span></div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:70%; background:#2d6a2d"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mat-card">
+      <div class="mat-head">
+        <h3>Concrete (reinforced)</h3>
+        <div class="mat-subtype">Standard mix · 3,000 m² · 8 storeys</div>
+        <div class="mat-badges">
+          <span class="mbadge mbadge-neutral">No biogenic liabilities</span>
+          <span class="mbadge mbadge-neutral">~25% recyclable</span>
+        </div>
+      </div>
+      <div class="mat-body">
+        <div class="mat-fig-row"><span class="mat-fig-lbl">Standard EPD</span><span class="mat-fig-val mfv-ink">+1,260 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">SOC / EOL CH₄ / foregone</span><span class="mat-fig-val mfv-muted">— not applicable —</span></div>
+        <div class="mat-total"><span class="mat-total-lbl">Full-boundary total</span><span class="mat-total-val mtv-muted">+1,260 t</span></div>
+        <div class="circ-section">
+          <div class="circ-title">End-of-life circularity</div>
+          <div class="circ-row"><span class="circ-lbl">Recovery rate</span><span class="circ-val cv-muted">~25%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Landfill fraction</span><span class="circ-val cv-muted">~40%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Module D credit</span><span class="circ-val cv-muted">Minimal</span></div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:25%; background:#888"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mat-card">
+      <div class="mat-head">
+        <h3>Steel (structural)</h3>
+        <div class="mat-subtype">30% recycled content · 3,000 m² · 8 storeys</div>
+        <div class="mat-badges">
+          <span class="mbadge mbadge-neutral">No biogenic liabilities</span>
+          <span class="mbadge mbadge-circ">~85% recyclable</span>
+        </div>
+      </div>
+      <div class="mat-body">
+        <div class="mat-fig-row"><span class="mat-fig-lbl">Standard EPD</span><span class="mat-fig-val mfv-ink">+2,040 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">SOC / EOL CH₄ / foregone</span><span class="mat-fig-val mfv-muted">— not applicable —</span></div>
+        <div class="mat-total"><span class="mat-total-lbl">Full-boundary total</span><span class="mat-total-val mtv-muted">+2,040 t</span></div>
+        <div class="circ-section">
+          <div class="circ-title">End-of-life circularity</div>
+          <div class="circ-row"><span class="circ-lbl">Recovery rate</span><span class="circ-val cv-green">~85%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Landfill fraction</span><span class="circ-val cv-green">~5%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Module D credit</span><span class="circ-val cv-green">Significant</span></div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:85%; background:#2d6a2d"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mat-card aluminium">
+      <div class="mat-head">
+        <h3>Aluminium (structural)</h3>
+        <div class="mat-subtype">Recycled content · modular · 3,000 m² · 8 storeys</div>
+        <div class="mat-badges">
+          <span class="mbadge mbadge-neutral">No biogenic liabilities</span>
+          <span class="mbadge mbadge-al">~95% recyclable</span>
+        </div>
+      </div>
+      <div class="mat-body">
+        <div class="mat-fig-row"><span class="mat-fig-lbl">Standard EPD (A1–A5)</span><span class="mat-fig-val mfv-ink">+1,640 t</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">SOC / EOL CH₄ / foregone</span><span class="mat-fig-val mfv-muted">— not applicable —</span></div>
+        <div class="mat-fig-row"><span class="mat-fig-lbl">Module D recovery credit</span><span class="mat-fig-val mfv-blue">−580 t</span></div>
+        <div class="mat-total" style="border-top: 1px solid #185F9E"><span class="mat-total-lbl">Full-boundary + Module D</span><span class="mat-total-val mtv-blue">+1,060 t</span></div>
+        <div class="circ-section">
+          <div class="circ-title">End-of-life circularity</div>
+          <div class="circ-row"><span class="circ-lbl">Recovery rate</span><span class="circ-val cv-blue">~95%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Landfill fraction</span><span class="circ-val cv-blue">&lt;2%</span></div>
+          <div class="circ-row"><span class="circ-lbl">Module D credit</span><span class="circ-val cv-blue">−580 t (improves with grid)</span></div>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:95%; background:#185F9E"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Summary table -->
+  <span class="kicker">The three DRL principles — scored by material</span>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Material</th>
+        <th>Permanence</th>
+        <th>Full-boundary accounting</th>
+        <th>Circularity</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td-mat">Mass timber (standard)</td>
+        <td><span class="spill sp-fail">Degrades · burns</span></td>
+        <td class="td-fail">Fails — 3 liabilities hidden</td>
+        <td><span class="spill sp-fail">~5% recyclable</span></td>
+        <td class="td-fail">Fails all three</td>
+      </tr>
+      <tr>
+        <td class="td-mat">Mass timber (disassembly design)</td>
+        <td><span class="spill sp-fail">Degrades · burns</span></td>
+        <td class="td-fail">Fails — SOC and OCP remain</td>
+        <td><span class="spill sp-pass">70–90% recoverable</span></td>
+        <td class="td-muted">Improving — EOL methane reduced</td>
+      </tr>
+      <tr>
+        <td class="td-mat">Concrete</td>
+        <td><span class="spill sp-pass">Durable</span></td>
+        <td class="td-pass">Passes — no biogenic liabilities</td>
+        <td><span class="spill sp-mid">~25% recyclable</span></td>
+        <td class="td-muted">Passes 2 of 3</td>
+      </tr>
+      <tr>
+        <td class="td-mat">Steel</td>
+        <td><span class="spill sp-pass">Durable</span></td>
+        <td class="td-pass">Passes — no biogenic liabilities</td>
+        <td><span class="spill sp-pass">~85% recyclable</span></td>
+        <td class="td-pass">Passes all three</td>
+      </tr>
+      <tr>
+        <td class="td-mat">Aluminium (modular)</td>
+        <td><span class="spill sp-best">Durable · disassemblable</span></td>
+        <td class="td-best">Passes — no biogenic liabilities</td>
+        <td><span class="spill sp-best">~95% recyclable</span></td>
+        <td class="td-best">Passes all three + Module D improves over time</td>
+      </tr>
+    </tbody>
+  </table>
+
+</section>
+
+<hr class="rule">
+
+<div class="calc-note">
+  All figures are illustrative estimates for a 3,000 m² 8-storey reference building using published-literature emission factors. Standard EPD figures follow EN 15804 / ISO 21930 including the biogenic carbon storage credit for timber. Full-boundary figures add: soil organic carbon efflux (Manaaki Whenua S-Map; Scion Long-Term Site Productivity trials; k = 0.048 yr⁻¹ first-decade decay); end-of-life methane (EPA WARM v15; NZ GHG Inventory HWP parameters; GWP₁₀₀ = 28; adjusted for recovery rate); foregone sequestration (Stephenson et al. <em>Nature</em> 507, 2014; Luyssaert et al. 2008; SCC $190/t NPV-discounted). Aluminium Module D credit based on secondary smelting energy intensity; improves with grid decarbonisation and low-carbon primary smelting (ELYSIS inert-anode process). Recyclability rates: WORLDSTEEL (2023) for steel; European Aluminium (2023) for aluminium; EN 15804 Module C defaults for timber and concrete. The disassembly recovery rate slider affects EOL methane only — SOC efflux and foregone sequestration are harvest-point liabilities unaffected by end-of-life design. Reproduction sheets for Brock Commons (UBC, 2017) and T3 Minneapolis (Hines, 2016) with full source citations are available at <a href="corrected-ledger/index.html">the Corrected Ledger</a>. Full methodology in the <a href="codex.html">DRL Thesis Codex v4.3.3</a>.
+</div>
+
+</main>
+
+<footer class="colophon">
+  <p>Full-boundary carbon calculator. Figures are illustrative estimates. All emission factors and citations documented in the DRL Thesis Codex v4.3.3.</p>
+  <p style="margin-top:0.5rem"><a href="index.html">← back to the home page</a></p>
+  <p class="footer-nav-secondary"><a href="methodology.html">Methodology</a> &nbsp;·&nbsp; <a href="feedback.html">Feedback</a> &nbsp;·&nbsp; <a href="legal.html">Legal</a> &nbsp;·&nbsp; <a href="revision-history.html">Revision History</a></p>
+</footer>
+
+<script>
+const EF = {
+  materials: {
+    clt:       { a1a5: 280, bio: -450, ti: 0.35, modD: 0 },
+    glulam:    { a1a5: 320, bio: -480, ti: 0.38, modD: 0 },
+    sawn:      { a1a5: 200, bio: -380, ti: 0.30, modD: 0 },
+    concrete:  { a1a5: 420, bio: 0,    ti: 0,    modD: -30 },
+    steel:     { a1a5: 680, bio: 0,    ti: 0,    modD: -180 },
+    aluminium: { a1a5: 1640, bio: 0,   ti: 0,    modD: -580 }
+  },
+  species: {
+    radiata:  { soc: 253, gr: 14 },
+    loblolly: { soc: 308, gr: 12 },
+    douglas:  { soc: 280, gr: 10 },
+    spruce:   { soc: 240, gr: 9  }
+  }
+};
+
+let mode = 'basic';
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-basic').classList.toggle('active', m === 'basic');
+  document.getElementById('btn-adv').classList.toggle('active', m === 'advanced');
+  document.getElementById('basic-panel').style.display = m === 'basic' ? '' : 'none';
+  document.getElementById('adv-panel').style.display = m === 'advanced' ? '' : 'none';
+  if (m === 'basic') syncMaster();
+  calc();
+}
+
+function syncMaster() {
+  const on = document.getElementById('master-tog').checked;
+  ['tog-soc','tog-eol','tog-ocp'].forEach(id => { document.getElementById(id).checked = on; });
+  document.getElementById('lbl-std').className = on ? '' : 'on';
+  document.getElementById('lbl-drl').className = on ? 'on' : '';
+  calc();
+}
+
+function fmt(n) {
+  if (n === 0) return '0 t';
+  return (n > 0 ? '+' : '') + Math.round(n).toLocaleString() + ' t';
+}
+
+function calc() {
+  const mat      = document.getElementById('material').value;
+  const sp       = document.getElementById('species').value;
+  const area     = parseFloat(document.getElementById('area').value) || 3000;
+  const landfill = parseFloat(document.getElementById('landfill').value) / 100 || 0.65;
+  const recovery = parseFloat(document.getElementById('recovery').value) / 100 || 0.05;
+  const scc      = parseFloat(document.getElementById('scc').value) || 190;
+  const togSoc   = document.getElementById('tog-soc').checked;
+  const togEol   = document.getElementById('tog-eol').checked;
+  const togOcp   = document.getElementById('tog-ocp').checked;
+
+  document.getElementById('scc-disp').textContent = '$' + scc + '/t';
+  document.getElementById('recov-disp').textContent = Math.round(recovery * 100) + '%';
+
+  const mef = EF.materials[mat];
+  const sef = EF.species[sp];
+  const isT = mef.ti > 0;
+
+  const embodied  = Math.round(mef.a1a5 * area / 1000);
+  const bioCredit = Math.round(mef.bio * area / 1000);
+  const modD      = Math.round(mef.modD * area / 1000);
+  const stdTotal  = embodied + bioCredit + modD;
+
+  const timberMass = isT ? area * mef.ti * 0.5 : 0;
+  const hectares   = isT ? timberMass / (sef.gr * 40) : 0;
+
+  const socVal = isT ? Math.round(hectares * sef.soc) : 0;
+  const effectiveLandfill = Math.max(0, landfill - recovery);
+  const eolVal = isT ? Math.round(timberMass * effectiveLandfill * 0.5 * 0.6 * 28) : 0;
+  const ocpVal = isT ? Math.round(hectares * sef.gr * 40) : 0;
+
+  const drlAdd  = (togSoc ? socVal : 0) + (togEol ? eolVal : 0) + (togOcp ? ocpVal : 0);
+  const drlTotal = stdTotal + drlAdd;
+
+  const gapPct  = stdTotal !== 0 ? Math.round(((drlTotal - stdTotal) / Math.abs(stdTotal)) * 100) : 0;
+
+  // Update results
+  document.getElementById('res-std').textContent = Math.round(stdTotal).toLocaleString() + ' t';
+  const drlEl = document.getElementById('res-drl');
+  drlEl.textContent = Math.round(drlTotal).toLocaleString() + ' t';
+  drlEl.className = 'result-number ' + (drlTotal < stdTotal ? 'design-green' : 'drl-red');
+
+  document.getElementById('gap-pct').textContent = (gapPct >= 0 ? '+' : '') + gapPct + '% gap';
+
+  document.getElementById('br-a1a5').textContent  = fmt(embodied);
+  document.getElementById('br-bio').textContent   = isT ? fmt(bioCredit) : 'n/a';
+  document.getElementById('br-modd').textContent  = modD !== 0 ? fmt(modD) : 'n/a';
+  document.getElementById('br-soc').textContent   = isT && togSoc ? fmt(socVal) : isT ? '(off)' : 'n/a';
+  document.getElementById('br-eol').textContent   = isT && togEol ? fmt(eolVal) : isT ? '(off)' : 'n/a';
+  document.getElementById('br-ocp').textContent   = isT && togOcp ? fmt(ocpVal) : isT ? '(off)' : 'n/a';
+  document.getElementById('br-total').textContent = Math.round(drlTotal).toLocaleString() + ' t';
+
+  document.getElementById('val-soc').textContent = isT ? fmt(socVal) : 'n/a';
+  document.getElementById('val-eol').textContent = isT ? fmt(eolVal) : 'n/a';
+  document.getElementById('val-ocp').textContent = isT ? fmt(ocpVal) : 'n/a';
+
+  // Bars
+  const maxV = Math.max(Math.abs(drlTotal), Math.abs(stdTotal), 1);
+  document.getElementById('bar-std').style.width = Math.max(3, Math.round(Math.abs(stdTotal)/maxV*100)) + '%';
+  document.getElementById('bar-drl').style.width = Math.max(3, Math.round(Math.abs(drlTotal)/maxV*100)) + '%';
+  document.getElementById('bar-drl').className = 'bar-fill ' + (drlTotal < stdTotal ? 'bf-design' : 'bf-drl');
+
+  // Design for disassembly callout
+  const note = document.getElementById('design-note');
+  const noteText = document.getElementById('design-note-text');
+  if (isT && recovery > 0.1) {
+    const saving = Math.round(timberMass * Math.min(recovery, landfill) * 0.5 * 0.6 * 28);
+    noteText.textContent = 'At ' + Math.round(recovery*100) + '% material recovery, end-of-life methane liability reduces by approximately ' + saving.toLocaleString() + ' tCO₂e compared to standard landfill assumption. SOC efflux and foregone sequestration are harvest-point liabilities — they are unaffected by end-of-life design choices.';
+    note.style.display = '';
+  } else {
+    note.style.display = 'none';
+  }
+
+  // Species selector visibility
+  document.getElementById('species').closest('.calc-field').style.opacity = isT ? '1' : '0.4';
+}
+
+calc();
+</script>
+
+</body>
+</html>
