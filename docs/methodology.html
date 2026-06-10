@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Methodology — Full Boundary Carbon</title>
+<meta name="description" content="How the DRL framework works as an arithmetic process. Plain language explanation of the three liabilities and the emission factor library, with citations to peer-reviewed sources.">
+<link rel="canonical" href="https://www.fullboundarycarbon.org/methodology.html">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Full Boundary Carbon">
+<meta property="og:title" content="Methodology — Full Boundary Carbon">
+<meta property="og:description" content="How the DRL framework works as an arithmetic process. Plain language explanation of the three liabilities and the emission factor library, with citations to peer-reviewed sources.">
+<meta property="og:url" content="https://www.fullboundarycarbon.org/methodology.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Methodology — Full Boundary Carbon">
+<meta name="twitter:description" content="How the DRL framework works as an arithmetic process.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/explainer.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-title"><a href="index.html">Divergent Resource Logic <em>— DRL</em></a></div>
+    <nav class="masthead-nav">
+    <a href="index.html">Home</a>
+    <a href="codex.html">Codex</a>
+    <a href="companions.html">Companions</a>
+    <a href="corrected-ledger/index.html">Corrected Ledger</a>
+    <a href="calculator.html">Calculator</a>
+    <a href="resources.html">Resources</a>
+    <a href="about.html">About</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="lede">
+  <span class="kicker">Methodology</span>
+  <h1>How <em>full-boundary accounting</em> works.</h1>
+  <p class="standfirst">A plain-language summary of the arithmetic the DRL framework applies. Every emission factor, every range, every source. This page exists so anyone — auditor, regulator, journalist, opposing counsel — can replicate any number on this site.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <span class="kicker">The framework in one paragraph</span>
+  <h2>What DRL adds</h2>
+  <p>The current standards — EN 15978, ISO 21930, and the national building-LCA standards built on top of them — exclude three specific carbon flows from the disclosure boundary for timber products. The DRL framework adds them back. The three flows are: <strong>soil organic carbon efflux</strong> following clear-fell harvest; <strong>end-of-life methane</strong> from the fraction of mass timber that enters anaerobic landfill conditions; and <strong>foregone sequestration</strong> — the carbon the standing forest would have continued to accumulate had the trees not been felled. Each flow has a peer-reviewed measurement basis. Each has a defensible range of emission factors. The recomputation does not require any new science; it applies measurements that already exist in one part of the regulatory apparatus to the part that does not currently use them.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <span class="kicker">The three liabilities</span>
+  <h2>What gets added back, and from where</h2>
+
+  <h3>Liability 1 — Soil organic carbon (SOC) efflux</h3>
+  <p>Clear-fell harvest disturbs soil to a depth of 30+ cm. Soil organic carbon, accumulated over decades of forest growth and root turnover, oxidises and leaves the soil over the following 5–10 years post-harvest. Meta-analyses of post-harvest soil-carbon trajectories give a mean loss of approximately 11% of soil organic carbon in the top 30 cm — though the range across studies is wide.</p>
+
+  <p>Translated to per-cubic-metre-of-harvested-timber units, using typical mass-timber-grade plantation yield (~250 m³/ha), the SOC efflux factor falls in the range of 0.06 to 0.20 tCO₂e per m³ of harvested timber. The DRL mid-range default is 0.12 tCO₂e/m³.</p>
+
+  <p><strong>Sources:</strong> Achat et al. 2015 (<em>Forest Ecology and Management</em> 348:124–141); James &amp; Harrison 2016 (<em>Forests</em> 7(12):308); Mayer et al. 2020 (<em>Forest Ecology and Management</em> 466:118127).</p>
+
+  <h3>Liability 2 — End-of-life methane</h3>
+  <p>EN 15978 and the Environmental Product Declaration regime treat biogenic carbon under what is called the "carbon-neutral convention" — sequestration is reported as a negative emission at production stage, and the same amount is reported as a positive emission at end of life. In aggregate over the building's full life cycle, biogenic carbon nets to zero. The convention assumes that the end-of-life pathway is dominated by combustion (CO₂ release) or recovery (no release). In practice, a substantial fraction of mass timber in construction and demolition waste in North America enters landfill, where anaerobic decomposition produces methane.</p>
+
+  <p>Methane has a 100-year global warming potential of 27.9 (IPCC AR6 WG1, Table 7.15). Measured fractions of biogenic carbon released as methane from wood in landfill conditions range from 3% (IPCC default, assumed-best-case) through 12% (Ximenes 2008, measured Australian landfill) to 18% (Wang 2013, long-term decay). The DRL mid-range default is 12%, applied as:</p>
+
+  <p style="font-family: var(--mono); font-size: 0.95rem; background: var(--paper-warm); padding: 0.75rem 1rem; border-left: 3px solid var(--oxblood);">
+    EOL methane (tCO₂e) = biogenic_carbon_stored × 0.12 × (16/44) × 27.9
+  </p>
+
+  <p>where the (16/44) converts CO₂-equivalent biogenic-store mass into CH₄ mass, and 27.9 is the GWP100.</p>
+
+  <p><strong>Sources:</strong> Ximenes et al. 2008 (<em>Carbon Balance and Management</em> 3(1):1–13); Wang et al. 2013 (<em>Waste Management</em>); IPCC 2021 AR6 WG1 Chapter 7 Table 7.15.</p>
+
+  <h3>Liability 3 — Foregone sequestration</h3>
+  <p>The carbon a forest would have continued to accumulate had the trees not been felled. This is, technically, an opportunity cost — the difference between the harvested-and-replanted trajectory and the keep-growing trajectory. It is excluded from EN 15978 because EN 15978 is a product-system standard, not a landscape-system standard. The standing forest is outside its scope.</p>
+
+  <p>Stephenson et al. (Nature 2014, 403 species confirmed) established that large trees continue accumulating carbon at accelerating rates as they age — overturning the prior assumption that mature forests are net-neutral. Luyssaert et al. (Nature 2008) established that 75% of stands over 180 years old remain net carbon sinks. Searchinger and Peng (Nature 2023) and the subsequent Nature 646 exchange documented the magnitude of the convention error at global scale: 3.5–4.2 GtCO₂e per year undercount.</p>
+
+  <p>Translated to per-cubic-metre-of-harvested-timber units, the foregone-sequestration factor depends on the assessment window chosen. The DRL defaults are: 0.45 tCO₂e/m³ for a 50-year window; 0.95 tCO₂e/m³ for a 100-year window (matching the EN 15978 reference study period); 2.00 tCO₂e/m³ for a 200-year window. The 100-year window is the default for whole-building LCA recomputation. The 50-year window is appropriate where the harvested wood is from beetle-killed salvage (as for T3 Minneapolis on the Corrected Ledger) and would have decomposed regardless.</p>
+
+  <p><strong>Sources:</strong> Stephenson et al. 2014 (<em>Nature</em> 507:90–93); Luyssaert et al. 2008 (<em>Nature</em> 455:213–215); Peng/Searchinger/Zionts/Waite 2023 (<em>Nature</em> 620:110–115); Sohngen/Baker/Favero 2025 critique and Searchinger/Berry/Peng reply (<em>Nature</em> 646:E18–E23).</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <span class="kicker">The arithmetic</span>
+  <h2>How a recomputation runs, line by line</h2>
+
+  <p>The recomputation for any single timber building follows a fixed sequence. The inputs are: harvested timber volume in m³; the building's disclosed biogenic-carbon storage in tCO₂e (where published); and the building's disclosed substitution credit in tCO₂e (where published). The outputs are seven lines:</p>
+
+  <ol style="font-family: var(--serif); font-size: 1.02rem; margin: 1rem 0 1.5rem 1.5rem; line-height: 1.7;">
+    <li><strong>A1–A3 manufacturing emissions</strong> = volume × A1-A3 factor (default 0.18 tCO₂e/m³, range 0.13–0.25 from Athena and FPInnovations EPDs).</li>
+    <li><strong>Biogenic storage (industry credit)</strong> = the building's own disclosed value where published; otherwise volume × 0.917 tCO₂e/m³ (EN 15978 convention factor).</li>
+    <li><strong>Substitution credit</strong> = the building's own disclosed value where published, otherwise zero.</li>
+    <li><strong>Disclosed net</strong> = A1-A3 − biogenic storage − substitution credit. This is what the disclosure would show.</li>
+    <li><strong>+ SOC efflux</strong> = volume × SOC factor (default 0.12 tCO₂e/m³).</li>
+    <li><strong>+ EOL methane</strong> = biogenic storage × 0.12 × (16/44) × 27.9.</li>
+    <li><strong>+ Foregone sequestration</strong> = volume × FS factor (default 0.95 tCO₂e/m³, 100-yr window).</li>
+  </ol>
+
+  <p>The <strong>full-boundary total</strong> is the sum of A1-A3 plus the three liability lines. The <strong>delta</strong> is the difference between the full-boundary total and the disclosed net — the magnitude of the boundary error.</p>
+
+  <p>Every emission factor in the arithmetic is sourced. Every recomputed building on the <a href="corrected-ledger/index.html">Corrected Ledger</a>
+    <a href="calculator.html">Calculator</a> applies this same arithmetic. Each one has an embedded calculator that lets the reader change any input and see the recomputed number; each one carries a downloadable Reproduction Sheet with the arithmetic shown line by line. Any third party can replicate any number on this site.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <span class="kicker">What this methodology does not do</span>
+  <h2>Scope notes</h2>
+
+  <p>The DRL framework is, at present, a methodology for recomputing the wood-attributable portion of building-level emissions. Three things are explicitly outside its scope:</p>
+
+  <ol style="font-family: var(--serif); font-size: 1.02rem; margin: 1rem 0 1.5rem 1.5rem; line-height: 1.7;">
+    <li><strong>It does not recompute non-wood components</strong> of the building (concrete podium, steel reinforcement, glazing, MEP). Those use their own published emission factors. A complete whole-building corrected number would apply DRL to wood and the existing factors to the rest.</li>
+    <li><strong>It does not say wood is worse than concrete.</strong> The concrete alternatives have their own uncounted liabilities — primarily, the embodied carbon of the cement they require, against the carbonation re-uptake credit at end-of-life. A full-boundary comparison across all materials is the policy ask. The recomputed buildings on the Corrected Ledger demonstrate the magnitude of the wood-side error; they do not by themselves settle the material-choice question.</li>
+    <li><strong>It is not a substitution-credit calculator.</strong> Where buildings have published substitution credits (T3 Minneapolis: 1,411 tCO₂e; Brock Commons: 679 tCO₂e), the recomputation preserves them as-disclosed and adds the three excluded liabilities on top. The DRL framework does not, in this iteration, take a position on whether substitution credits are appropriately calculated; it accepts them as published and applies the boundary correction independently.</li>
+  </ol>
+</section>
+
+<hr class="rule">
+
+<section>
+  <span class="kicker">Audit trail</span>
+  <h2>How to check our work</h2>
+
+  <p>Every recomputation on the site is checkable in three ways. <strong>First</strong>, the HTML pages on the <a href="corrected-ledger/index.html">Corrected Ledger</a>
+    <a href="calculator.html">Calculator</a> show the arithmetic in a table on the page. <strong>Second</strong>, the embedded mini-calculator on each building page runs the same arithmetic live — change a factor and watch the answer move. <strong>Third</strong>, the downloadable Reproduction Sheet (PDF) for each building lays out every input, every factor, every step of the calculation, every citation, with a sign-off line. The three sources are guaranteed to agree by automated testing (the JavaScript calculator and the Python PDF generator are tested against the same canonical numbers; 6/6 verification passed at last build).</p>
+
+  <p>If any number on this site is wrong, please submit a correction via the <a href="feedback.html">feedback channel</a>. Every submission is logged with timestamp. Substantive corrections result in an updated page and a revision note.</p>
+</section>
+
+</main>
+
+<footer class="colophon">
+  <p>The methodology described on this page is presented in greater depth in the <a href="codex.html">DRL Thesis Codex</a>, Chapters 6 and 7.</p>
+  <p style="margin-top: 0.5rem;"><a href="index.html">← back to the home page</a></p>
+  <p class="footer-nav-secondary"><a href="methodology.html">Methodology</a> &nbsp;·&nbsp; <a href="feedback.html">Feedback</a> &nbsp;·&nbsp; <a href="legal.html">Legal</a> &nbsp;·&nbsp; <a href="revision-history.html">Revision History</a></p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,225 @@
+DRL SITE — VERSION 2.4 — DEPLOYMENT INSTRUCTIONS
+================================================
+Build date: 28 May 2026
+Author: Murphy O'Neal
+Status: Built and ready to deploy.
+
+
+WHAT CHANGED FROM v2.3 -> v2.4
+------------------------------
+Three categories of change since the v2.3 live site.
+
+  CATEGORY 1: NEW DOCUMENTS PUBLISHED (4 new files in /docs/)
+    Four documents are added to /docs/ and surfaced on the
+    companions page:
+
+      /docs/DRL-Codex-v4.3.3.pdf            (REPLACES v4.3.0)
+        135 pages. The Codex updated from v4.3.0 to v4.3.3.
+        Change at v4.3.3: corpus framing-lock realignment pass
+        (fifteen in-text edits). References to the author's own
+        modular construction system reviewed against the
+        framework's standing posture that worked examples are
+        illustrative, not promotional. Promotional and
+        supply-chain-specific passages removed or rewritten to
+        evidentiary register; the system retained only where it
+        is the disclosed source of pilot data, with limitations
+        acknowledged. No change to any emission factor,
+        calculation, or finding.
+        NOTE: the old DRL-Codex-v4.3.0.pdf can be deleted from
+        /docs/ or left in place. All site links now point to
+        v4.3.3. Recommended: delete the v4.3.0 file so only the
+        current version is served.
+
+      /docs/DRL-The-Curtain-v1.1.pdf         (NEW)
+        Modern chronology, 1969-2026, in three strands. v1.1
+        adds the "Note on prior knowledge" framing section and
+        cross-references Appendix Z. Counsel review NOT gated
+        (per author decision).
+
+      /docs/DRL-Appendix-Z-Deep-Chronology.pdf  (NEW)
+        Four-millennium chronology, c.2100 BCE - 2026. v1.0.
+        Counsel review NOT gated (per author decision).
+
+      /docs/DRL-ESG-Carbon-Cost-Gap.pdf      (NEW)
+        Media release. v1.0. Formerly the Forbes long-form draft;
+        Forbes attribution removed, retitled, reframed as a
+        media release published to the site as a public
+        document. Now covers both halves of the argument: the
+        three excluded liabilities AND the over-counting of the
+        same physical carbon (Section 7), with a cross-reference
+        to The Tree of Many Sales (now also published, below).
+
+      /docs/DRL-Tree-of-Many-Sales-v0.3.pdf  (NEW)
+        Working draft v0.3, 21 pages. The over-counting analysis:
+        the same physical tonne counted as a benefit three to six
+        times across independent accounting systems (Part I
+        follows the carbon; Part II the asset, sixteen US events
+        and twelve NZ; Part III synthesises). Published as a
+        working draft — structural mechanisms anchored to
+        statutory/regulatory/program sources; typical-magnitude
+        figures are working estimates pending a primary-source
+        verification pass. The v0.4 upgrade pass (methods
+        appendix, dependency map, three-bin legal taxonomy,
+        separated unit tables, exposed methane derivation) is a
+        FUTURE build, NOT in this package.
+
+  CATEGORY 2: NEW PAGE + SITE-WIDE NAV
+      /revision-history.html                 (NEW)
+        Single authoritative revision-history page: every
+        document and page with version, date, and changelog.
+        The chain-of-notice record. Added to the SECONDARY
+        FOOTER NAV (not the masthead) on every page:
+
+          Methodology . Feedback . Legal . Revision History
+
+        The masthead nav is unchanged (still six items). The
+        revision-history page sits in the same secondary-utility
+        tier as Methodology/Feedback/Legal, consistent with the
+        site's existing information architecture.
+
+  CATEGORY 3: PAGE EDITS
+      codex.html
+        - All version references v4.3.0 -> v4.3.3 (meta, JSON-LD,
+          download card, citation block, download link)
+        - Page count 136 -> 135; release date -> 27 May 2026
+        - datePublished in JSON-LD -> 2026-05-27
+        - "Five companion documents" -> "Eight"; the three new
+          documents added to the list
+        - Download button file size removed (was hardcoded 1.6MB)
+
+      companions.html
+        - Three new cards: The Curtain (#curtain), Appendix Z
+          (#appendix-z), ESG media release (#esg-media-release)
+        - Reserved anchor comment for #tree-of-many-sales (card
+          to be added when that paper's v0.4 publishes)
+        - meta/og descriptions updated to list new documents
+
+      index.html
+        - Codex hero card and documents table v4.3.0 -> v4.3.3,
+          136 -> 135 pages
+
+      about.html
+        - Founding statement now names the research venture
+          (Adaptable Structures) directly, and discloses that it
+          links to this site as a research output while this site
+          does not link back. Strengthens the independence
+          disclosure now that the inbound link is live.
+
+      sitemap.xml
+        - revision-history.html added
+        - lastmod bumped to 2026-05-28 on codex, companions,
+          about; new page dated 2026-05-28
+
+
+WHAT IS IN THIS BUILD (changed/new files only)
+----------------------------------------------
+  NEW:
+    /revision-history.html
+    /docs/DRL-Codex-v4.3.3.pdf
+    /docs/DRL-The-Curtain-v1.1.pdf
+    /docs/DRL-Appendix-Z-Deep-Chronology.pdf
+    /docs/DRL-ESG-Carbon-Cost-Gap.pdf
+    /docs/DRL-Tree-of-Many-Sales-v0.3.pdf
+
+  MODIFIED:
+    /index.html
+    /codex.html
+    /companions.html
+    /about.html
+    /methodology.html      (footer nav only)
+    /feedback.html         (footer nav only)
+    /legal.html            (footer nav only)
+    /resources.html        (footer nav only)
+    /404.html              (footer nav only)
+    /sitemap.xml
+
+  DELETE (optional, recommended):
+    /docs/DRL-Codex-v4.3.0.pdf   (superseded; no links point to it)
+
+  UNCHANGED (not in this package; leave as-is on the live site):
+    /robots.txt
+    /assets/                (style.css, explainer.css, favicon.svg)
+    /pages/behind-the-curtain.html
+    /corrected-ledger/      (entire directory)
+    /docs/Reagan-Forestry-Legacy-v3.2.pdf
+    /docs/Reagan-Vertical-Timeline-1981-2030.pdf
+    /docs/Lumber-PPI-Price-Configuration-1981-2026.pdf
+    /docs/DRL-Section-7.4-NECO2-Worked-Example.pdf
+    /docs/DRL-Configuration-as-Authority.pdf / .docx
+
+
+HOW TO DEPLOY (GitHub Desktop)
+------------------------------
+Repo at: C:\Users\<you>\Documents\GitHub\fullboundarycarbon\
+
+  Step 1. Extract this package on your computer.
+
+  Step 2. Copy the contents into your local repo folder, allowing
+          overwrites:
+            - revision-history.html  -> repo root (new)
+            - index.html, codex.html, companions.html, about.html,
+              methodology.html, feedback.html, legal.html,
+              resources.html, 404.html, sitemap.xml -> repo root
+              (overwrite)
+            - docs\*.pdf -> repo \docs\ (4 files; Codex overwrites
+              nothing since the filename is new — v4.3.3)
+
+  Step 3. (Recommended) Delete \docs\DRL-Codex-v4.3.0.pdf from the
+          repo so only the current Codex version is served.
+
+  Step 4. Open GitHub Desktop. Confirm the change list:
+          ~10 modified HTML/XML files, 1 new HTML page, 4 new
+          PDFs, 1 deleted PDF (if you did Step 3).
+
+  Step 5. Summary box:
+            "Site v2.4: Codex v4.3.3; Curtain, Appendix Z,
+             Tree of Many Sales, ESG release; revision-history page"
+          Commit to main, then Push origin.
+
+  Step 6. Cloudflare auto-deploys within ~60 seconds.
+
+
+WHAT TO TEST AFTER DEPLOY
+-------------------------
+  [ ] companions.html shows four new cards: The Curtain,
+      Appendix Z, The Tree of Many Sales, and the ESG
+      Carbon-Cost Gap media release. Each download link resolves
+      to a PDF in /docs/.
+  [ ] codex.html download button pulls DRL-Codex-v4.3.3.pdf.
+      Open it: 135 pages, title page reads IRONCLAD v4.3.3.
+  [ ] Every page footer second line reads:
+        Methodology . Feedback . Legal . Revision History
+      and Revision History clicks through to the new page.
+  [ ] revision-history.html renders, all internal links resolve.
+  [ ] index.html hero + documents table read v4.3.3 / 135 pages.
+  [ ] about.html founding statement names Adaptable Structures.
+  [ ] sitemap.xml loads and includes /revision-history.html.
+  [ ] Old v4.3.0 link (if file deleted) 404s gracefully via the
+      branded 404 page; no live link should point to it.
+
+
+COUNSEL REVIEW STATUS
+---------------------
+  Per author decision (28 May 2026):
+    - The Curtain v1.1 and Appendix Z v1.0: NOT gated; published.
+    - ESG Carbon-Cost Gap media release: published to site as a
+      public document (NOT a press-list distribution; that would
+      be a separate instrument requiring separate review).
+
+  Still counsel-gated, NOT in this build:
+    - Appendix W (culpability finding)
+    - /political-connections.html
+    - Tree of Many Sales v0.4 upgrade pass (methods appendix,
+      dependency map, three-bin legal taxonomy, separated unit
+      tables, exposed methane derivation). v0.3 is published in
+      this build as a working draft; v0.4 is a future revision.
+
+  Standing counsel-review priority (unchanged):
+    1. DRL Codex (Section 6 on+)
+    2. about.html (competitive-interest disclosure)
+    3. pages/behind-the-curtain.html
+    4. corrected-ledger/timber/*/index.html (Block 02 quotes)
+    5. legal.html (DRAFT)
+    6. resources.html (footer disclaimer)
+
+— End of deploy instructions —
