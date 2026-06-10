@@ -56,12 +56,18 @@
 <section>
   <div class="firstperson" style="border-left-color: var(--gold);">
     <span class="kicker" style="color: var(--gold);">Submission form</span>
-    <p class="download-title">The form is being installed</p>
-    <p>The interactive submission form for this site is being installed. In the interim, please send feedback by email to the address below. Email submissions are processed identically to form submissions: logged with timestamp, reviewed, and where substantive, acted on with a revision note posted on the relevant page.</p>
+    <p class="download-title">Submit feedback, corrections, or a dispute</p>
+    <p>Use the form below to submit feedback, corrections to numbers or citations, substantive disputes, or supporting documents. File attachments are accepted. All submissions are logged with timestamp on receipt.</p>
 
-    <p style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--rule); font-family: var(--mono); font-size: 1rem;">
-      <strong>Email:</strong> feedback (at) fullboundarycarbon (dot) org
-    </p>
+    <!-- Tally embed: replace YOUR_FORM_ID with your Tally form ID -->
+    <div style="margin: 1.5rem 0;">
+      <iframe data-tally-src="https://tally.so/embed/YOUR_FORM_ID?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+        loading="lazy" width="100%" height="400" frameborder="0" marginheight="0" marginwidth="0"
+        title="DRL Feedback and Corrections"></iframe>
+      <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);}</script>
+    </div>
+
+    <p style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--rule); font-size: 0.92rem; color: var(--ink-soft);">Prefer email? Write directly to <strong>feedback@fullboundarycarbon.org</strong>. Email submissions are processed identically to form submissions: logged with timestamp, reviewed, and where substantive, acted on with a revision note posted on the relevant page.</p>
 
     <p style="margin-top: 1rem; font-size: 0.92rem; color: var(--ink-soft); font-style: italic;">Please identify yourself in your submission. Anonymous submissions are logged and reviewed but cannot be acknowledged with a response.</p>
   </div>
