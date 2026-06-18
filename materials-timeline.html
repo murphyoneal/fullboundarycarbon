@@ -9,6 +9,7 @@
   <meta property="og:description" content="Forty-five years of structural material prices with tariff, conflict, and policy events overlaid. See which interventions favoured which material.">
   <meta property="og:url" content="https://www.fullboundarycarbon.org/materials-timeline.html">
   <link rel="canonical" href="https://www.fullboundarycarbon.org/materials-timeline.html">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -283,13 +284,26 @@
       padding: 0.75rem 0.85rem;
       font-size: 0.8rem;
       line-height: 1.5;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, background 0.15s;
+      cursor: pointer;
+    }
+
+    .event-card:hover { background: #2e2e2e; }
+
+    .event-card--active {
+      background: #252525;
+      box-shadow: 0 0 0 1px currentColor;
     }
 
     .event-card[data-cat="tariff"] { border-left-color: #e07050; }
     .event-card[data-cat="conflict"] { border-left-color: #c06090; }
     .event-card[data-cat="policy"] { border-left-color: #70a0d0; }
     .event-card[data-cat="promotion"] { border-left-color: #80c080; }
+
+    .event-card[data-cat="tariff"].event-card--active { box-shadow: 0 0 0 1px #e07050; background: rgba(224,112,80,0.07); }
+    .event-card[data-cat="conflict"].event-card--active { box-shadow: 0 0 0 1px #c06090; background: rgba(192,96,144,0.07); }
+    .event-card[data-cat="policy"].event-card--active { box-shadow: 0 0 0 1px #70a0d0; background: rgba(112,160,208,0.07); }
+    .event-card[data-cat="promotion"].event-card--active { box-shadow: 0 0 0 1px #80c080; background: rgba(128,192,128,0.07); }
 
     .event-card .ev-year {
       font-family: var(--font-mono);
@@ -400,6 +414,59 @@
 
     .site-footer a { color: var(--muted); text-decoration: underline; }
 
+    /* ── Chart event popup panel ───────────────────────── */
+    #chart-event-tip {
+      position: absolute;
+      background: #1c1c1c;
+      border: 1px solid #e07050;
+      border-radius: 2px;
+      padding: 1rem 1.1rem 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-bright);
+      pointer-events: auto;
+      display: none;
+      z-index: 200;
+      width: 320px;
+      max-width: calc(100vw - 20px);
+      line-height: 1.5;
+      font-family: var(--font-serif);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+    }
+    #chart-event-tip .tip-year {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.06em;
+    }
+    #chart-event-tip .tip-title {
+      display: block;
+      color: var(--text-bright);
+      font-size: 0.85rem;
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+    }
+    #chart-event-tip .tip-body {
+      color: var(--muted);
+      font-size: 0.77rem;
+      display: block;
+    }
+    #chart-event-tip .tip-close {
+      display: block;
+      margin-top: 0.75rem;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    #chart-event-tip .tip-close:hover { color: var(--text-bright); border-color: var(--muted); }
+
     /* ── Chart tooltip ─────────────────────────────────── */
     #tooltip-box {
       position: fixed;
@@ -431,17 +498,15 @@
 <!-- Masthead -->
 <header class="masthead">
   <a class="masthead-brand" href="/index.html">Divergent Resource Logic <em>— DRL</em></a>
-  <nav aria-label="Site navigation">
-    <ul class="masthead-nav">
-      <li><a href="/index.html">Home</a></li>
-      <li><a href="/codex.html">Codex</a></li>
-      <li><a href="/companions.html">Companions</a></li>
-      <li><a href="/corrected-ledger/index.html">Corrected Ledger</a></li>
-      <li><a href="/calculator.html">Calculator</a></li>
-      <li><a href="/materials-timeline.html" class="active">Timeline</a></li>
-      <li><a href="/resources.html">Resources</a></li>
-      <li><a href="/about.html">About</a></li>
-    </ul>
+  <nav class="masthead-nav" aria-label="Site navigation">
+    <a href="index.html">Home</a>
+    <a href="codex.html">Codex</a>
+    <a href="companions.html">Companions</a>
+    <a href="corrected-ledger/index.html">Corrected Ledger</a>
+    <a href="calculator.html">Calculator</a>
+    <a href="materials-timeline.html" class="active">Timeline</a>
+    <a href="resources.html">Resources</a>
+    <a href="about.html">About</a>
   </nav>
 </header>
 
@@ -551,6 +616,7 @@
 </footer>
 
 <div id="tooltip-box"></div>
+<div id="chart-event-tip"></div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
@@ -693,31 +759,224 @@ const shadingPlugin = {
   }
 };
 
-// Event line plugin
+// Event line plugin — draws line + dot + rotated short label
+const EVENT_COLORS = {
+  tariff:   { line:'rgba(224,112,80,0.5)',  dot:'#e07050', text:'rgba(224,112,80,0.9)'  },
+  conflict: { line:'rgba(192,96,144,0.5)',  dot:'#c06090', text:'rgba(192,96,144,0.9)'  },
+  policy:   { line:'rgba(112,160,208,0.5)', dot:'#70a0d0', text:'rgba(112,160,208,0.9)' },
+  promotion:{ line:'rgba(128,192,128,0.5)', dot:'#80c080', text:'rgba(128,192,128,0.9)' },
+};
+
 const eventLinePlugin = {
   id:'eventlines',
   afterDraw(chart) {
-    const {ctx, chartArea:{top,bottom}, scales:{x}} = chart;
+    const {ctx, chartArea:{top,bottom,left,right}, scales:{x}} = chart;
     if (!x) return;
+
     const activeEvts = EVENTS.filter(e =>
       state.categories[e.cat] &&
       e.year >= state.fromYear && e.year <= state.toYear
     );
-    activeEvts.forEach(ev => {
-      const xPos = x.getPixelForValue(ev.year);
-      const colors = {tariff:'rgba(224,112,80,0.35)',conflict:'rgba(192,96,144,0.35)',policy:'rgba(112,160,208,0.35)',promotion:'rgba(128,192,128,0.35)'};
-      ctx.save();
-      ctx.strokeStyle = colors[ev.cat] || 'rgba(255,255,255,0.2)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([3,3]);
-      ctx.beginPath();
-      ctx.moveTo(xPos, top);
-      ctx.lineTo(xPos, bottom);
-      ctx.stroke();
-      ctx.restore();
+
+    // Group by year to stagger labels when multiple events land in same year
+    const byYear = {};
+    activeEvts.forEach(e => {
+      if (!byYear[e.year]) byYear[e.year] = [];
+      byYear[e.year].push(e);
+    });
+
+    Object.entries(byYear).forEach(([yr, evts]) => {
+      const xPos = x.getPixelForValue(Number(yr));
+      if (xPos < left || xPos > right) return;
+
+      const isHighlighted = state.highlightYear === Number(yr);
+
+      evts.forEach((ev, idx) => {
+        const col = EVENT_COLORS[ev.cat] || EVENT_COLORS.policy;
+        const labelOffset = idx * 14;
+
+        ctx.save();
+
+        // If highlighted: draw a bright solid glow line first
+        if (isHighlighted) {
+          ctx.strokeStyle = col.dot;
+          ctx.lineWidth = 3;
+          ctx.globalAlpha = 0.6;
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.moveTo(xPos, top);
+          ctx.lineTo(xPos, bottom);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+
+        // Dashed vertical line
+        ctx.strokeStyle = isHighlighted ? col.dot : col.line;
+        ctx.lineWidth = isHighlighted ? 2 : 1.5;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(xPos, top + labelOffset);
+        ctx.lineTo(xPos, bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Colored dot at top of line — larger when highlighted
+        const dotY = top + 4 + labelOffset;
+        const dotR = isHighlighted ? 6 : 4;
+        ctx.fillStyle = col.dot;
+        if (isHighlighted) {
+          ctx.shadowColor = col.dot;
+          ctx.shadowBlur = 8;
+        }
+        ctx.beginPath();
+        ctx.arc(xPos, dotY, dotR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Rotated short label
+        ctx.save();
+        ctx.translate(xPos + 4, dotY + 10);
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = isHighlighted ? 'bold 9px Courier New, monospace' : '9px Courier New, monospace';
+        ctx.fillStyle = col.text;
+        ctx.globalAlpha = isHighlighted ? 1 : 0.85;
+        ctx.textAlign = 'left';
+        ctx.fillText(ev.short, 0, 0);
+        ctx.restore();
+
+        ctx.restore();
+      });
     });
   }
 };
+
+// Canvas click — open event panel anchored below the clicked line
+let activePanel = null;
+state.highlightYear = null;
+
+function setupCanvasHover() {
+  const canvas = document.getElementById('mainChart');
+  const tip = document.getElementById('chart-event-tip');
+
+  // Hover — just show cursor change near event lines
+  canvas.addEventListener('mousemove', (e) => {
+    const chart = Chart.getChart(canvas);
+    if (!chart || !chart.scales.x) return;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const {scales:{x}, chartArea:{left,right}} = chart;
+
+    const activeEvts = EVENTS.filter(ev =>
+      state.categories[ev.cat] &&
+      ev.year >= state.fromYear && ev.year <= state.toYear
+    );
+
+    let nearEvent = false;
+    activeEvts.forEach(ev => {
+      const evX = x.getPixelForValue(ev.year);
+      if (Math.abs(mouseX - evX) < 10 && mouseX >= left && mouseX <= right) {
+        nearEvent = true;
+      }
+    });
+    canvas.style.cursor = nearEvent ? 'pointer' : 'default';
+  });
+
+  // Click — open/close event panel
+  canvas.addEventListener('click', (e) => {
+    const chart = Chart.getChart(canvas);
+    if (!chart || !chart.scales.x) return;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const {scales:{x}, chartArea:{left,right}} = chart;
+
+    const activeEvts = EVENTS.filter(ev =>
+      state.categories[ev.cat] &&
+      ev.year >= state.fromYear && ev.year <= state.toYear
+    );
+
+    let found = null;
+    let minDist = 14;
+    activeEvts.forEach(ev => {
+      const evX = x.getPixelForValue(ev.year);
+      const dist = Math.abs(mouseX - evX);
+      if (dist < minDist && mouseX >= left && mouseX <= right) {
+        minDist = dist;
+        found = ev;
+      }
+    });
+
+    // Also collect same-year events
+    if (found) {
+      const sameYear = activeEvts.filter(ev => ev.year === found.year);
+      const col = EVENT_COLORS[found.cat] || EVENT_COLORS.policy;
+
+      // Toggle: click same event again to close
+      if (activePanel === found.year) {
+        tip.style.display = 'none';
+        activePanel = null;
+        state.highlightYear = null;
+        syncCardHighlight(null);
+        chart.update();
+        return;
+      }
+      activePanel = found.year;
+      state.highlightYear = found.year;
+      syncCardHighlight(found.year);
+      chart.update();
+
+      // Build panel content — all events at this year
+      const catLabels = {tariff:'Tariff', conflict:'Conflict', policy:'Policy', promotion:'Promotion'};
+      let html = '';
+      sameYear.forEach((ev, idx) => {
+        const c = EVENT_COLORS[ev.cat] || EVENT_COLORS.policy;
+        if (idx > 0) html += '<hr style="border:none;border-top:1px solid #2e2e2e;margin:0.6rem 0">';
+        html += `
+          <div class="tip-event">
+            <span class="tip-year">${ev.year} · <span style="color:${c.dot}">${catLabels[ev.cat] || ev.cat}</span></span>
+            <strong class="tip-title">${ev.title}</strong>
+            <p class="tip-body">${ev.body}</p>
+          </div>`;
+      });
+      html += '<button class="tip-close" onclick="document.getElementById(\'chart-event-tip\').style.display=\'none\';window._activePanel=null">✕ close</button>';
+
+      tip.innerHTML = html;
+      tip.style.borderColor = col.dot;
+      tip.style.display = 'block';
+
+      // Position: below chart, aligned to clicked x position
+      const canvasRect = canvas.getBoundingClientRect();
+      const evX = x.getPixelForValue(found.year);
+      let left_px = canvasRect.left + evX - 10;
+      // Keep within viewport
+      const panelW = 320;
+      if (left_px + panelW > window.innerWidth - 20) left_px = window.innerWidth - panelW - 20;
+      if (left_px < 10) left_px = 10;
+
+      tip.style.left = left_px + 'px';
+      tip.style.top = (canvasRect.bottom + window.scrollY + 8) + 'px';
+      tip.style.position = 'absolute';
+    } else {
+      // Clicked away from any event — close
+      tip.style.display = 'none';
+      activePanel = null;
+      state.highlightYear = null;
+      syncCardHighlight(null);
+      chart.update();
+    }
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!canvas.contains(e.target) && !tip.contains(e.target)) {
+      tip.style.display = 'none';
+      activePanel = null;
+      state.highlightYear = null;
+      syncCardHighlight(null);
+      const c = Chart.getChart(canvas);
+      if (c) c.update();
+    }
+  });
+}
 
 Chart.register(shadingPlugin, eventLinePlugin);
 
@@ -828,13 +1087,104 @@ function renderEvents() {
   document.getElementById('events-count').textContent = active.length;
 
   grid.innerHTML = active.map(e => `
-    <div class="event-card" data-cat="${e.cat}">
+    <div class="event-card" data-cat="${e.cat}" data-year="${e.year}" role="button" tabindex="0" title="Click to highlight ${e.year} on chart">
       <div class="ev-year">${e.year}</div>
       <div class="ev-cat">${e.cat}</div>
       <div class="ev-title">${e.title}</div>
       <div class="ev-body">${e.body}</div>
     </div>
   `).join('');
+
+  // Attach click handlers to cards
+  grid.querySelectorAll('.event-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const year = parseInt(card.dataset.year);
+      activateYear(year, card);
+    });
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const year = parseInt(card.dataset.year);
+        activateYear(year, card);
+      }
+    });
+  });
+}
+
+// Activate a year from a card click — highlight chart line + open popup + scroll to chart
+function activateYear(year, sourceCard) {
+  const canvas = document.getElementById('mainChart');
+  const tip = document.getElementById('chart-event-tip');
+  const chartObj = Chart.getChart(canvas);
+
+  // Toggle off if already active
+  if (activePanel === year) {
+    tip.style.display = 'none';
+    activePanel = null;
+    state.highlightYear = null;
+    syncCardHighlight(null);
+    if (chartObj) chartObj.update();
+    return;
+  }
+
+  activePanel = year;
+  state.highlightYear = year;
+  syncCardHighlight(year);
+  if (chartObj) chartObj.update();
+
+  // Scroll chart into view
+  canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Build and show popup anchored below chart at that year's x position
+  const activeEvts = EVENTS.filter(ev =>
+    state.categories[ev.cat] &&
+    ev.year >= state.fromYear && ev.year <= state.toYear &&
+    ev.year === year
+  );
+
+  if (!activeEvts.length) return;
+  const col = EVENT_COLORS[activeEvts[0].cat] || EVENT_COLORS.policy;
+  const catLabels = {tariff:'Tariff', conflict:'Conflict', policy:'Policy', promotion:'Promotion'};
+
+  let html = '';
+  activeEvts.forEach((ev, idx) => {
+    const c = EVENT_COLORS[ev.cat] || EVENT_COLORS.policy;
+    if (idx > 0) html += '<hr style="border:none;border-top:1px solid #2e2e2e;margin:0.6rem 0">';
+    html += `
+      <div class="tip-event">
+        <span class="tip-year">${ev.year} · <span style="color:${c.dot}">${catLabels[ev.cat] || ev.cat}</span></span>
+        <strong class="tip-title">${ev.title}</strong>
+        <p class="tip-body">${ev.body}</p>
+      </div>`;
+  });
+  html += '<button class="tip-close" onclick="document.getElementById(\'chart-event-tip\').style.display=\'none\';window.__activePanel=null">✕ close</button>';
+
+  tip.innerHTML = html;
+  tip.style.borderColor = col.dot;
+  tip.style.display = 'block';
+  tip.style.position = 'absolute';
+
+  // Position below chart aligned to year
+  setTimeout(() => {
+    if (chartObj && chartObj.scales && chartObj.scales.x) {
+      const canvasRect = canvas.getBoundingClientRect();
+      const evX = chartObj.scales.x.getPixelForValue(year);
+      let lx = canvasRect.left + window.scrollX + evX - 10;
+      const panelW = 320;
+      if (lx + panelW > window.innerWidth + window.scrollX - 20) lx = window.innerWidth + window.scrollX - panelW - 20;
+      if (lx < 10) lx = 10;
+      tip.style.left = lx + 'px';
+      tip.style.top = (canvasRect.bottom + window.scrollY + 8) + 'px';
+    }
+  }, 400); // after scroll settles
+}
+
+// Sync card highlight state
+function syncCardHighlight(year) {
+  document.querySelectorAll('.event-card').forEach(card => {
+    const cardYear = parseInt(card.dataset.year);
+    card.classList.toggle('event-card--active', cardYear === year);
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -846,6 +1196,10 @@ function redraw() {
   chart.data.datasets = buildDatasets();
   chart.options.scales.x.min = state.fromYear;
   chart.options.scales.x.max = state.toYear;
+  // Clear any active highlight on control change
+  activePanel = null;
+  state.highlightYear = null;
+  document.getElementById('chart-event-tip').style.display = 'none';
   chart.update();
   renderEvents();
 }
@@ -900,6 +1254,7 @@ sliderTo.addEventListener('input', () => {
 
 // Init
 redraw();
+setupCanvasHover();
 </script>
 </body>
 </html>
