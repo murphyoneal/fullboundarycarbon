@@ -778,30 +778,41 @@ const eventLinePlugin = {
       e.year >= state.fromYear && e.year <= state.toYear
     );
 
-    // Group by year to stagger labels when multiple events land in same year
+    // Group by year, assign per-event pixel offsets so stacked events are separated
     const byYear = {};
     activeEvts.forEach(e => {
       if (!byYear[e.year]) byYear[e.year] = [];
       byYear[e.year].push(e);
     });
 
-    Object.entries(byYear).forEach(([yr, evts]) => {
-      const xPos = x.getPixelForValue(Number(yr));
-      if (xPos < left || xPos > right) return;
+    // Store resolved x positions on each event for click detection
+    activeEvts.forEach(ev => { ev._xPos = null; });
 
-      const isHighlighted = state.highlightYear === Number(yr);
+    const OFFSET_PX = 7; // pixels between stacked events
+
+    Object.entries(byYear).forEach(([yr, evts]) => {
+      const baseX = x.getPixelForValue(Number(yr));
+      if (baseX < left || baseX > right) return;
+
+      const total = evts.length;
+      // Centre the group around baseX
+      const groupWidth = (total - 1) * OFFSET_PX;
+      const startX = baseX - groupWidth / 2;
 
       evts.forEach((ev, idx) => {
+        const xPos = startX + idx * OFFSET_PX;
+        ev._xPos = xPos; // store for click detection
+
         const col = EVENT_COLORS[ev.cat] || EVENT_COLORS.policy;
-        const labelOffset = idx * 14;
+        const isHighlighted = state.highlightYear === ev.year && state.highlightEvent === ev;
 
         ctx.save();
 
-        // If highlighted: draw a bright solid glow line first
+        // Highlight glow
         if (isHighlighted) {
           ctx.strokeStyle = col.dot;
           ctx.lineWidth = 3;
-          ctx.globalAlpha = 0.6;
+          ctx.globalAlpha = 0.5;
           ctx.setLineDash([]);
           ctx.beginPath();
           ctx.moveTo(xPos, top);
@@ -810,39 +821,40 @@ const eventLinePlugin = {
           ctx.globalAlpha = 1;
         }
 
-        // Dashed vertical line
+        // Dashed line
         ctx.strokeStyle = isHighlighted ? col.dot : col.line;
         ctx.lineWidth = isHighlighted ? 2 : 1.5;
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
-        ctx.moveTo(xPos, top + labelOffset);
+        ctx.moveTo(xPos, top);
         ctx.lineTo(xPos, bottom);
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Colored dot at top of line — larger when highlighted
-        const dotY = top + 4 + labelOffset;
+        // Dot
+        const dotY = top + 4;
         const dotR = isHighlighted ? 6 : 4;
         ctx.fillStyle = col.dot;
-        if (isHighlighted) {
-          ctx.shadowColor = col.dot;
-          ctx.shadowBlur = 8;
-        }
+        if (isHighlighted) { ctx.shadowColor = col.dot; ctx.shadowBlur = 8; }
         ctx.beginPath();
         ctx.arc(xPos, dotY, dotR, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Rotated short label
-        ctx.save();
-        ctx.translate(xPos + 4, dotY + 10);
-        ctx.rotate(-Math.PI / 2);
-        ctx.font = isHighlighted ? 'bold 9px Courier New, monospace' : '9px Courier New, monospace';
-        ctx.fillStyle = col.text;
-        ctx.globalAlpha = isHighlighted ? 1 : 0.85;
-        ctx.textAlign = 'left';
-        ctx.fillText(ev.short, 0, 0);
-        ctx.restore();
+        // Rotated label — only show on outermost event of cluster to avoid overlap,
+        // or always show if single event
+        if (total === 1 || idx === 0) {
+          ctx.save();
+          ctx.translate(xPos + 4, dotY + 10);
+          ctx.rotate(-Math.PI / 2);
+          ctx.font = isHighlighted ? 'bold 9px Courier New' : '9px Courier New';
+          ctx.fillStyle = col.text;
+          ctx.globalAlpha = isHighlighted ? 1 : 0.85;
+          ctx.textAlign = 'left';
+          const label = total > 1 ? `${ev.short} +${total-1}` : ev.short;
+          ctx.fillText(label, 0, 0);
+          ctx.restore();
+        }
 
         ctx.restore();
       });
@@ -850,9 +862,43 @@ const eventLinePlugin = {
   }
 };
 
-// Canvas click — open event panel anchored below the clicked line
+// ── Shared popup builder ───────────────────────────────────────────────────────
+function showEventPopup(evts, xPosOnCanvas, canvas, tip, chart) {
+  const catLabels = {tariff:'Tariff', conflict:'Conflict', policy:'Policy', promotion:'Promotion'};
+  const col = EVENT_COLORS[evts[0].cat] || EVENT_COLORS.policy;
+
+  let html = '';
+  evts.forEach((ev, idx) => {
+    const c = EVENT_COLORS[ev.cat] || EVENT_COLORS.policy;
+    if (idx > 0) html += '<hr style="border:none;border-top:1px solid #2e2e2e;margin:0.6rem 0">';
+    html += `
+      <div class="tip-event">
+        <span class="tip-year">${ev.year} · <span style="color:${c.dot}">${catLabels[ev.cat] || ev.cat}</span></span>
+        <strong class="tip-title">${ev.title}</strong>
+        <p class="tip-body">${ev.body}</p>
+      </div>`;
+  });
+  html += '<button class="tip-close" onclick="document.getElementById(\'chart-event-tip\').style.display=\'none\'">✕ close</button>';
+
+  tip.innerHTML = html;
+  tip.style.borderColor = col.dot;
+  tip.style.display = 'block';
+  tip.style.position = 'absolute';
+
+  // Position below chart aligned to event x
+  const canvasRect = canvas.getBoundingClientRect();
+  const panelW = 320;
+  let lx = canvasRect.left + window.scrollX + xPosOnCanvas - 10;
+  if (lx + panelW > window.innerWidth + window.scrollX - 20) lx = window.innerWidth + window.scrollX - panelW - 20;
+  if (lx < 10) lx = 10;
+  tip.style.left = lx + 'px';
+  tip.style.top = (canvasRect.bottom + window.scrollY + 8) + 'px';
+}
+
+// Canvas hover + click setup
 let activePanel = null;
 state.highlightYear = null;
+state.highlightEvent = null;
 
 function setupCanvasHover() {
   const canvas = document.getElementById('mainChart');
@@ -887,79 +933,49 @@ function setupCanvasHover() {
     if (!chart || !chart.scales.x) return;
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
-    const {scales:{x}, chartArea:{left,right}} = chart;
+    const {chartArea:{left,right}} = chart;
+
+    if (mouseX < left || mouseX > right) return;
 
     const activeEvts = EVENTS.filter(ev =>
       state.categories[ev.cat] &&
-      ev.year >= state.fromYear && ev.year <= state.toYear
+      ev.year >= state.fromYear && ev.year <= state.toYear &&
+      ev._xPos !== null && ev._xPos !== undefined
     );
 
+    // Find nearest individual event by its actual rendered x position
     let found = null;
-    let minDist = 14;
+    let minDist = 12;
     activeEvts.forEach(ev => {
-      const evX = x.getPixelForValue(ev.year);
-      const dist = Math.abs(mouseX - evX);
-      if (dist < minDist && mouseX >= left && mouseX <= right) {
-        minDist = dist;
-        found = ev;
-      }
+      const dist = Math.abs(mouseX - ev._xPos);
+      if (dist < minDist) { minDist = dist; found = ev; }
     });
 
-    // Also collect same-year events
     if (found) {
-      const sameYear = activeEvts.filter(ev => ev.year === found.year);
-      const col = EVENT_COLORS[found.cat] || EVENT_COLORS.policy;
-
-      // Toggle: click same event again to close
-      if (activePanel === found.year) {
+      // Toggle off if clicking same event
+      if (state.highlightEvent === found) {
         tip.style.display = 'none';
         activePanel = null;
         state.highlightYear = null;
+        state.highlightEvent = null;
         syncCardHighlight(null);
         chart.update();
         return;
       }
+
       activePanel = found.year;
       state.highlightYear = found.year;
+      state.highlightEvent = found;
       syncCardHighlight(found.year);
       chart.update();
 
-      // Build panel content — all events at this year
-      const catLabels = {tariff:'Tariff', conflict:'Conflict', policy:'Policy', promotion:'Promotion'};
-      let html = '';
-      sameYear.forEach((ev, idx) => {
-        const c = EVENT_COLORS[ev.cat] || EVENT_COLORS.policy;
-        if (idx > 0) html += '<hr style="border:none;border-top:1px solid #2e2e2e;margin:0.6rem 0">';
-        html += `
-          <div class="tip-event">
-            <span class="tip-year">${ev.year} · <span style="color:${c.dot}">${catLabels[ev.cat] || ev.cat}</span></span>
-            <strong class="tip-title">${ev.title}</strong>
-            <p class="tip-body">${ev.body}</p>
-          </div>`;
-      });
-      html += '<button class="tip-close" onclick="document.getElementById(\'chart-event-tip\').style.display=\'none\';window._activePanel=null">✕ close</button>';
-
-      tip.innerHTML = html;
-      tip.style.borderColor = col.dot;
-      tip.style.display = 'block';
-
-      // Position: below chart, aligned to clicked x position
-      const canvasRect = canvas.getBoundingClientRect();
-      const evX = x.getPixelForValue(found.year);
-      let left_px = canvasRect.left + evX - 10;
-      // Keep within viewport
-      const panelW = 320;
-      if (left_px + panelW > window.innerWidth - 20) left_px = window.innerWidth - panelW - 20;
-      if (left_px < 10) left_px = 10;
-
-      tip.style.left = left_px + 'px';
-      tip.style.top = (canvasRect.bottom + window.scrollY + 8) + 'px';
-      tip.style.position = 'absolute';
+      // Build popup — just this one event (not all same-year)
+      showEventPopup([found], found._xPos, canvas, tip, chart);
     } else {
-      // Clicked away from any event — close
       tip.style.display = 'none';
       activePanel = null;
       state.highlightYear = null;
+      state.highlightEvent = null;
       syncCardHighlight(null);
       chart.update();
     }
@@ -971,6 +987,7 @@ function setupCanvasHover() {
       tip.style.display = 'none';
       activePanel = null;
       state.highlightYear = null;
+      state.highlightEvent = null;
       syncCardHighlight(null);
       const c = Chart.getChart(canvas);
       if (c) c.update();
@@ -1111,17 +1128,27 @@ function renderEvents() {
   });
 }
 
-// Activate a year from a card click — highlight chart line + open popup + scroll to chart
 function activateYear(year, sourceCard) {
   const canvas = document.getElementById('mainChart');
   const tip = document.getElementById('chart-event-tip');
   const chartObj = Chart.getChart(canvas);
 
-  // Toggle off if already active
-  if (activePanel === year) {
+  // Find the first event for this year with a rendered position
+  const yearEvts = EVENTS.filter(ev =>
+    state.categories[ev.cat] &&
+    ev.year >= state.fromYear && ev.year <= state.toYear &&
+    ev.year === year
+  );
+
+  if (!yearEvts.length) return;
+  const targetEvt = yearEvts[0];
+
+  // Toggle off if already active on this event
+  if (state.highlightEvent === targetEvt) {
     tip.style.display = 'none';
     activePanel = null;
     state.highlightYear = null;
+    state.highlightEvent = null;
     syncCardHighlight(null);
     if (chartObj) chartObj.update();
     return;
@@ -1129,54 +1156,19 @@ function activateYear(year, sourceCard) {
 
   activePanel = year;
   state.highlightYear = year;
+  state.highlightEvent = targetEvt;
   syncCardHighlight(year);
   if (chartObj) chartObj.update();
 
   // Scroll chart into view
   canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-  // Build and show popup anchored below chart at that year's x position
-  const activeEvts = EVENTS.filter(ev =>
-    state.categories[ev.cat] &&
-    ev.year >= state.fromYear && ev.year <= state.toYear &&
-    ev.year === year
-  );
-
-  if (!activeEvts.length) return;
-  const col = EVENT_COLORS[activeEvts[0].cat] || EVENT_COLORS.policy;
-  const catLabels = {tariff:'Tariff', conflict:'Conflict', policy:'Policy', promotion:'Promotion'};
-
-  let html = '';
-  activeEvts.forEach((ev, idx) => {
-    const c = EVENT_COLORS[ev.cat] || EVENT_COLORS.policy;
-    if (idx > 0) html += '<hr style="border:none;border-top:1px solid #2e2e2e;margin:0.6rem 0">';
-    html += `
-      <div class="tip-event">
-        <span class="tip-year">${ev.year} · <span style="color:${c.dot}">${catLabels[ev.cat] || ev.cat}</span></span>
-        <strong class="tip-title">${ev.title}</strong>
-        <p class="tip-body">${ev.body}</p>
-      </div>`;
-  });
-  html += '<button class="tip-close" onclick="document.getElementById(\'chart-event-tip\').style.display=\'none\';window.__activePanel=null">✕ close</button>';
-
-  tip.innerHTML = html;
-  tip.style.borderColor = col.dot;
-  tip.style.display = 'block';
-  tip.style.position = 'absolute';
-
-  // Position below chart aligned to year
   setTimeout(() => {
-    if (chartObj && chartObj.scales && chartObj.scales.x) {
-      const canvasRect = canvas.getBoundingClientRect();
-      const evX = chartObj.scales.x.getPixelForValue(year);
-      let lx = canvasRect.left + window.scrollX + evX - 10;
-      const panelW = 320;
-      if (lx + panelW > window.innerWidth + window.scrollX - 20) lx = window.innerWidth + window.scrollX - panelW - 20;
-      if (lx < 10) lx = 10;
-      tip.style.left = lx + 'px';
-      tip.style.top = (canvasRect.bottom + window.scrollY + 8) + 'px';
-    }
-  }, 400); // after scroll settles
+    const xPos = targetEvt._xPos !== null && targetEvt._xPos !== undefined
+      ? targetEvt._xPos
+      : (chartObj && chartObj.scales.x ? chartObj.scales.x.getPixelForValue(year) : 160);
+    showEventPopup(yearEvts, xPos, canvas, tip, chartObj);
+  }, 400);
 }
 
 // Sync card highlight state
@@ -1199,6 +1191,7 @@ function redraw() {
   // Clear any active highlight on control change
   activePanel = null;
   state.highlightYear = null;
+  state.highlightEvent = null;
   document.getElementById('chart-event-tip').style.display = 'none';
   chart.update();
   renderEvents();
