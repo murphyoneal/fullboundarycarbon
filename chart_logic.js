@@ -56,10 +56,11 @@ const MODEL_RESPONSES = {
 
 let state = {
   adoption: 25,
-  biome: 'all',
-  forestType: 'both',
-  activeModels: new Set(['ChatGPT','Gemini','Copilot']),
-  showSpend: true
+  biome: 'boreal',
+  forestType: 'native_old_growth',
+  activeModels: new Set(['ChatGPT','Gemini','Copilot','Mistral','Perplexity']),
+  showSpend: true,
+  activeEvent: null
 };
 
 function modelCoversSelection(modelName, biome, forestType) {
@@ -183,9 +184,20 @@ function render() {
   const missing = Array.from(state.activeModels).filter(m =>
     !modelCoversSelection(m, state.biome, state.forestType)
   );
-  coverageNote.textContent = missing.length
-    ? `Not shown for this selection — incomplete data: ${missing.join(', ')}. See methodology table below.`
+  coverageNote.innerHTML = missing.length
+    ? `<strong>⚠ Not plotted for this selection</strong> — ${missing.join(' and ')} ${missing.length > 1 ? "don't" : "doesn't"} have verified data covering this biome/forest-type combination. Switch to <strong>Boreal + Native/old-growth</strong> to see all five models at once, or see the methodology table below for exact coverage.`
     : '';
+  coverageNote.style.cssText = missing.length
+    ? 'font-family:var(--mono);font-size:0.72rem;color:#fff;background:var(--oxblood);padding:0.5rem 0.7rem;margin-top:0.7rem;line-height:1.5;'
+    : 'display:none;';
+
+  // Mark affected model toggle buttons directly with a strike pattern
+  document.querySelectorAll('#modelToggles .toggle-btn').forEach(b => {
+    const m = b.dataset.value;
+    const isMissing = state.activeModels.has(m) && !modelCoversSelection(m, state.biome, state.forestType);
+    b.style.opacity = isMissing ? '0.45' : '1';
+    b.title = isMissing ? 'No verified data for the current biome/forest-type selection' : '';
+  });
 
   const histYears = HIST_DATA.co2_ppm.series.map(p => p.year);
   const baseYear = 2026;
@@ -252,6 +264,9 @@ function render() {
     });
   }
 
+  // Track marker hit-zones for click/hover detection, rebuilt every render
+  window._eventMarkerZones = [];
+
   const eventMarkerPlugin = {
     id: 'eventMarkers',
     afterDraw: (chart) => {
@@ -259,21 +274,43 @@ function render() {
       const area = chart.chartArea;
       const ctxp = chart.ctx;
       const catColor = { policy: '#2e6b9e', esg: '#b8860b', science: '#1d8a5e', drl: '#6e1f1f' };
+      window._eventMarkerZones = [];
+      // Group events by year so overlapping years offset horizontally, same pattern as materials-timeline.html
+      const byYear = {};
       HIST_DATA.policy_timeline.forEach(ev => {
         if (ev.year < histYears[0] || ev.year > baseYear) return;
-        const x = xScale.getPixelForValue(ev.year);
-        ctxp.save();
-        ctxp.beginPath();
-        ctxp.moveTo(x, area.bottom);
-        ctxp.lineTo(x, area.bottom - 10);
-        ctxp.strokeStyle = catColor[ev.category] || '#888';
-        ctxp.lineWidth = 2;
-        ctxp.stroke();
-        ctxp.beginPath();
-        ctxp.arc(x, area.bottom - 10, 3, 0, Math.PI*2);
-        ctxp.fillStyle = catColor[ev.category] || '#888';
-        ctxp.fill();
-        ctxp.restore();
+        if (!byYear[ev.year]) byYear[ev.year] = [];
+        byYear[ev.year].push(ev);
+      });
+      Object.keys(byYear).forEach(yearStr => {
+        const year = Number(yearStr);
+        const evts = byYear[yearStr];
+        const baseX = xScale.getPixelForValue(year);
+        evts.forEach((ev, i) => {
+          const offset = (i - (evts.length - 1) / 2) * 8;
+          const x = baseX + offset;
+          const markerY = area.bottom - 12;
+          const isActive = state.activeEvent === ev;
+          ctxp.save();
+          ctxp.beginPath();
+          ctxp.moveTo(x, area.bottom);
+          ctxp.lineTo(x, markerY);
+          ctxp.strokeStyle = catColor[ev.category] || '#888';
+          ctxp.lineWidth = isActive ? 3 : 2;
+          ctxp.globalAlpha = isActive ? 1 : 0.75;
+          ctxp.stroke();
+          ctxp.beginPath();
+          ctxp.arc(x, markerY, isActive ? 6 : 4, 0, Math.PI*2);
+          ctxp.fillStyle = catColor[ev.category] || '#888';
+          ctxp.fill();
+          if (isActive) {
+            ctxp.lineWidth = 2;
+            ctxp.strokeStyle = '#fff';
+            ctxp.stroke();
+          }
+          ctxp.restore();
+          window._eventMarkerZones.push({ x, y: markerY, radius: 8, event: ev });
+        });
       });
     }
   };
@@ -372,7 +409,91 @@ function render() {
     }
   });
 
+  setupEventMarkerClicks(ctx);
   renderLegendBelow();
+}
+
+function setupEventMarkerClicks(canvas) {
+  // Remove any previously attached listener to avoid stacking duplicates across re-renders
+  if (canvas._eventClickHandler) {
+    canvas.removeEventListener('click', canvas._eventClickHandler);
+    canvas.removeEventListener('mousemove', canvas._eventMoveHandler);
+  }
+  canvas._eventClickHandler = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const zones = window._eventMarkerZones || [];
+    const hit = zones.find(z => Math.hypot(z.x - mx, z.y - my) <= z.radius + 4);
+    if (hit) {
+      state.activeEvent = hit.event;
+      showEventPopup(hit.event, hit.x);
+      syncEventCardHighlight(hit.event);
+      if (chartInstance) chartInstance.draw();
+    } else {
+      hideEventPopup();
+      state.activeEvent = null;
+      syncEventCardHighlight(null);
+      if (chartInstance) chartInstance.draw();
+    }
+  };
+  canvas._eventMoveHandler = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const zones = window._eventMarkerZones || [];
+    const hit = zones.find(z => Math.hypot(z.x - mx, z.y - my) <= z.radius + 4);
+    canvas.style.cursor = hit ? 'pointer' : 'default';
+  };
+  canvas.addEventListener('click', canvas._eventClickHandler);
+  canvas.addEventListener('mousemove', canvas._eventMoveHandler);
+}
+
+function showEventPopup(ev, xPos) {
+  let popup = document.getElementById('eventPopup');
+  if (!popup) {
+    popup = document.createElement('div');
+    popup.id = 'eventPopup';
+    popup.style.cssText = 'position:relative; margin-top:0.6rem; padding:0.8rem 1rem; background:#fff; border:1px solid var(--rule); border-left:4px solid; font-size:0.85rem; line-height:1.5;';
+    document.querySelector('.chart-frame').appendChild(popup);
+  }
+  const catColor = { policy: '#2e6b9e', esg: '#b8860b', science: '#1d8a5e', drl: '#6e1f1f' };
+  popup.style.borderLeftColor = catColor[ev.category] || '#888';
+  popup.style.display = 'block';
+  const spendLine = ev.spend_usd
+    ? `<div style="margin-top:0.4rem; font-family: var(--mono); font-size: 0.75rem; color: var(--gold);">$${(ev.spend_usd/1e12).toFixed(1)}T global ESG AUM (not forestry-specific)</div>`
+    : `<div style="margin-top:0.4rem; font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faded); font-style: italic;">No discrete spend figure exists for this event — see note below the event list.</div>`;
+  popup.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <div style="font-family: var(--mono); font-size: 0.7rem; color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.05em;">${ev.year} — ${ev.category}</div>
+        <div style="margin-top:0.3rem; font-size: 0.95rem;">${ev.label}</div>
+        ${ev.spend_note ? `<div style="margin-top:0.4rem; font-size:0.78rem; color: var(--ink-soft);">${ev.spend_note}</div>` : ''}
+        ${spendLine}
+      </div>
+      <button onclick="hideEventPopup(); state.activeEvent=null; syncEventCardHighlight(null); if(chartInstance) chartInstance.draw();" style="background:none; border:none; cursor:pointer; font-size:1.1rem; color: var(--ink-faded); line-height:1;">×</button>
+    </div>
+  `;
+}
+
+function hideEventPopup() {
+  const popup = document.getElementById('eventPopup');
+  if (popup) popup.style.display = 'none';
+}
+
+function syncEventCardHighlight(ev) {
+  document.querySelectorAll('.event-card').forEach(card => {
+    card.style.borderLeftWidth = '3px';
+    card.style.boxShadow = 'none';
+  });
+  if (!ev) return;
+  const key = `${ev.year}-${ev.label.slice(0,20)}`;
+  const card = document.querySelector(`.event-card[data-event-key="${CSS.escape(key)}"]`);
+  if (card) {
+    card.style.borderLeftWidth = '5px';
+    card.style.boxShadow = '0 0 0 1px rgba(110,31,31,0.15)';
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 function renderLegendBelow() {
@@ -433,10 +554,19 @@ function renderEvents() {
     const card = document.createElement('div');
     card.className = 'event-card';
     card.dataset.cat = ev.category;
+    card.dataset.eventKey = `${ev.year}-${ev.label.slice(0,20)}`;
+    card.style.cursor = 'pointer';
     const spendLine = ev.spend_usd
       ? `<div style="margin-top:0.3rem; font-family: var(--mono); font-size: 0.68rem; color: var(--gold);">$${(ev.spend_usd/1e12).toFixed(1)}T global ESG AUM (not forestry-specific)</div>`
       : `<div style="margin-top:0.3rem; font-family: var(--mono); font-size: 0.65rem; color: var(--ink-faded); font-style: italic;">No discrete spend figure exists for this event</div>`;
     card.innerHTML = `<div class="ev-year">${ev.year} — ${ev.category.toUpperCase()}</div><div>${ev.label}</div>${spendLine}`;
+    card.addEventListener('click', () => {
+      state.activeEvent = ev;
+      showEventPopup(ev, null);
+      syncEventCardHighlight(ev);
+      if (chartInstance) chartInstance.draw();
+      document.querySelector('.chart-frame').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     grid.appendChild(card);
   });
 }
