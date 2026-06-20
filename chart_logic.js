@@ -252,14 +252,17 @@ function render() {
       label: 'Forestry market-development spend, cumulative (USD millions)',
       data: spendSeries.map(p => ({x: p.year, y: p.cumulative_usd / 1e6})),
       borderColor: '#b8860b',
-      backgroundColor: 'rgba(184,134,11,0.12)',
-      fill: true,
-      borderWidth: 2,
-      borderDash: [2,2],
-      pointRadius: 4,
-      pointBackgroundColor: '#b8860b',
+      backgroundColor: 'rgba(184,134,11,0.10)',
+      fill: 'origin',
+      borderWidth: 2.5,
+      pointRadius: 7,
+      pointHoverRadius: 9,
+      pointBackgroundColor: '#fff',
+      pointBorderColor: '#b8860b',
+      pointBorderWidth: 3,
       yAxisID: 'y3',
-      stepped: 'before',
+      tension: 0,
+      spanGaps: true,
       order: 2
     });
   }
@@ -401,9 +404,13 @@ function render() {
           suggestedMax: 25
         },
         y3: {
-          display: false,
           position: 'right',
-          min: 0
+          title: { display: true, text: 'Cumulative spend (USD millions)', font: { size: 11, weight: 'normal' }, color: '#b8860b' },
+          grid: { display: false },
+          min: 0,
+          suggestedMax: 250,
+          ticks: { color: '#b8860b', font: { size: 10 } },
+          afterFit: (axis) => { axis.paddingLeft = 10; }
         }
       }
     }
@@ -419,12 +426,24 @@ function setupEventMarkerClicks(canvas) {
     canvas.removeEventListener('click', canvas._eventClickHandler);
     canvas.removeEventListener('mousemove', canvas._eventMoveHandler);
   }
-  canvas._eventClickHandler = (e) => {
+  // Chart.js draws on a canvas scaled by devicePixelRatio for crisp rendering on retina/high-DPI
+  // screens. getPixelForValue() returns coordinates in that internal scaled space, but mouse
+  // events report coordinates in CSS/display space. Convert mouse coordinates into the same
+  // scaled space the marker zones were recorded in before hit-testing, or every click on a
+  // high-DPI screen lands far from where the marker actually appears to be.
+  function toCanvasSpace(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+  canvas._eventClickHandler = (e) => {
+    const { x: mx, y: my } = toCanvasSpace(e.clientX, e.clientY);
     const zones = window._eventMarkerZones || [];
-    const hit = zones.find(z => Math.hypot(z.x - mx, z.y - my) <= z.radius + 4);
+    const hit = zones.find(z => Math.hypot(z.x - mx, z.y - my) <= z.radius + 6);
     if (hit) {
       state.activeEvent = hit.event;
       showEventPopup(hit.event, hit.x);
@@ -438,11 +457,9 @@ function setupEventMarkerClicks(canvas) {
     }
   };
   canvas._eventMoveHandler = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    const { x: mx, y: my } = toCanvasSpace(e.clientX, e.clientY);
     const zones = window._eventMarkerZones || [];
-    const hit = zones.find(z => Math.hypot(z.x - mx, z.y - my) <= z.radius + 4);
+    const hit = zones.find(z => Math.hypot(z.x - mx, z.y - my) <= z.radius + 6);
     canvas.style.cursor = hit ? 'pointer' : 'default';
   };
   canvas.addEventListener('click', canvas._eventClickHandler);
