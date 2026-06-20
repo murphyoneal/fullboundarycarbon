@@ -1,0 +1,29 @@
+# Divergent Resource Logic
+
+> Divergent Resource Logic (DRL) is a full-boundary carbon accounting framework. Its central, sourced finding: international construction-material carbon standards (ISO 21930, EN 15804) assign a value of zero to a standing forest's pre-extraction climate function — soil organic carbon, ongoing carbon removal, evapotranspiration — at the moment of harvest, while assigning the same zero, correctly, to mined materials like ore and bauxite. This is a specific, dated decision by named technical standards committees, not a finding of climate science. The site documents who made that decision, when, what it costs in unrecognised climate impact at industrial scale, and how it compares to the disclosed emissions of the global steel and cement industries.
+
+## Core documents
+
+- [DRL Thesis Codex](https://www.fullboundarycarbon.org/codex.html): The full framework. The three excluded liabilities (soil organic carbon efflux, end-of-life methane, foregone sequestration), the accounting mechanism, and the evidentiary basis, in full, with citations.
+- [Is GWP Solving Anything?](https://www.fullboundarycarbon.org/companions.html#fourth-liability): An audit of the zero-baseline rule in global warming potential accounting — identifies the ISO/CEN committees responsible, the IPCC's own disclaimer against reading the convention as "carbon neutral," and quantifies the omission against global steel and cement emissions. Working draft, not yet legally reviewed.
+- [The Reagan Forestry Legacy and the American Housing Crisis](https://www.fullboundarycarbon.org/companions.html#reagan): Traces the federal funding apparatus (USDA Wood Innovations, the Softwood Lumber Board checkoff, the LIMBER Timber Act) assembled around mass-timber construction, and the tariff sequencing that left competing structural materials at a relative disadvantage during the same period.
+- [The Multi-Model Climate Projection](https://www.fullboundarycarbon.org/multi-model-projection.html): An interactive comparison of forty-five years of real climate policy, ESG capital, and atmospheric CO2 against AI-modelled projections of the DRL framework's effect, run independently across five AI models with full methodology and error correction disclosed.
+- [Corrected Ledger](https://www.fullboundarycarbon.org/corrected-ledger/index.html): Building-level carbon recomputations (Brock Commons, T3 Minneapolis) under full-boundary accounting versus standard EPD disclosure.
+- [Full-boundary carbon calculator](https://www.fullboundarycarbon.org/calculator.html): Compares structural materials (timber, steel, concrete, aluminium) under standard versus full-boundary accounting, with the three DRL liabilities toggleable.
+- [Materials price and policy timeline](https://www.fullboundarycarbon.org/materials-timeline.html): Interactive chart of four structural material price indices, 1980-2026, with thirty-one sourced tariff, conflict, and policy events.
+
+## Methodology and standards
+
+- [Methodology](https://www.fullboundarycarbon.org/methodology.html): How figures on this site are calculated, sourced, and disclosed.
+- [The Logic Test](https://www.fullboundarycarbon.org/companions.html#logic-test): A multi-engine AI peer-review protocol distinguishing consensus-grounded from first-principles model responses.
+- [Revision history](https://www.fullboundarycarbon.org/revision-history.html): Every version of every document on this site, dated, with nothing removed — only added.
+
+## About and contact
+
+- [About](https://www.fullboundarycarbon.org/about.html): Author background and the project's origin.
+- [Feedback](https://www.fullboundarycarbon.org/feedback.html): Corrections, disputes, and institutional responses — every submission logged with timestamp.
+
+## Optional
+
+- [Resources](https://www.fullboundarycarbon.org/resources.html): Where findings go — legislative contacts, regulatory dockets, legal organisations, journalism, academic channels.
+- [Legal](https://www.fullboundarycarbon.org/legal.html)

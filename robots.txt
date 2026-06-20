@@ -1,4 +1,52 @@
+# fullboundarycarbon.org — robots.txt
+# This site explicitly welcomes AI crawlers and research bots.
+# Every figure on every page is sourced and citable; the site exists
+# to be read, checked, and cited, by humans and AI systems alike.
+
 User-agent: *
+Allow: /
+
+# Major AI / LLM crawlers — explicitly allowed
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: meta-externalagent
 Allow: /
 
 Sitemap: https://www.fullboundarycarbon.org/sitemap.xml

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Multi-Model Climate Projection — Divergent Resource Logic</title>
+<meta name="description" content="What does the official record show, and what do five independent AI models project if full-boundary forestry accounting were adopted? An interactive, pre-and-post comparison of forty-five years of policy, ESG capital, and atmospheric CO2 against AI-modelled projections of the DRL framework's climate effect.">
+<link rel="canonical" href="https://www.fullboundarycarbon.org/multi-model-projection.html">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Full Boundary Carbon">
+<meta property="og:title" content="The Multi-Model Climate Projection — Divergent Resource Logic">
+<meta property="og:description" content="Five AI models, the same fixed inputs, and forty-five years of real policy and ESG-capital history compared on one timeline. What happened, and what changes if the accounting boundary changes.">
+<meta property="og:url" content="https://www.fullboundarycarbon.org/multi-model-projection.html">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "The Multi-Model Climate Projection",
+  "description": "An interactive comparison of forty-five years of real climate policy, ESG capital flows, and atmospheric CO2 concentration against AI-modelled projections of the Divergent Resource Logic full-boundary accounting framework's climate effect, generated independently across five AI models under fixed, disclosed methodology.",
+  "url": "https://www.fullboundarycarbon.org/multi-model-projection.html",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Divergent Resource Logic",
+    "url": "https://www.fullboundarycarbon.org/"
+  },
+  "creator": {
+    "@type": "Person",
+    "name": "Murphy O'Neal"
+  },
+  "datePublished": "2026-06-20",
+  "license": "https://www.fullboundarycarbon.org/legal.html",
+  "variableMeasured": [
+    "Atmospheric CO2 concentration (ppm), 1980-2026, NOAA/Scripps Mauna Loa Observatory",
+    "Global sustainable investment assets under management (USD trillion), 2016-2026, Global Sustainable Investment Alliance",
+    "Modelled annual climate impact-gap (tonnes CO2e/year) under full-boundary forestry accounting, by biome, forest type, year, and adoption percentage, as independently projected by five AI models (ChatGPT, Gemini, Copilot, Mistral, Perplexity)"
+  ]
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  :root {
+    --paper: #f4f1ea;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-faded: #888;
+    --oxblood: #6e1f1f;
+    --oxblood-light: #8e2b2b;
+    --gold: #b8860b;
+    --rule: #ddd8cc;
+    --rule-faint: #e8e4d9;
+    --serif: Georgia, 'Times New Roman', serif;
+    --mono: 'Courier New', Courier, monospace;
+    --model-chatgpt: #2e6b9e;
+    --model-gemini: #7a4ca0;
+    --model-copilot: #1d8a5e;
+    --model-mistral: #c0883a;
+    --model-perplexity: #a83264;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .masthead {
+    background: #fff;
+    border-bottom: 1px solid var(--rule);
+    padding: 0.85rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .masthead-title a { font-size: 0.95rem; color: var(--ink); text-decoration: none; }
+  .masthead-title em { color: var(--oxblood); font-style: italic; }
+  .masthead-nav a {
+    color: var(--ink-soft); text-decoration: none; font-size: 0.82rem;
+    letter-spacing: 0.03em; margin-left: 1.4rem;
+  }
+  .masthead-nav a:hover, .masthead-nav a.active { color: var(--oxblood); }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 0 2rem; }
+
+  .lede { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--rule); }
+  .kicker {
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--oxblood); display: block; margin-bottom: 0.6rem;
+  }
+  .lede h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: normal; line-height: 1.25; margin-bottom: 1rem; }
+  .lede h1 em { color: var(--oxblood); font-style: italic; }
+  .standfirst { font-size: 1.05rem; color: var(--ink-soft); max-width: 760px; line-height: 1.7; }
+
+  .draft-notice {
+    border: 1px solid var(--gold); background: rgba(184,134,11,0.07);
+    padding: 0.9rem 1.15rem; margin: 1.25rem 0; font-size: 0.88rem; line-height: 1.55;
+  }
+  .draft-notice strong { color: var(--gold); }
+
+  section { padding: 2rem 0; border-bottom: 1px solid var(--rule-faint); }
+  section h2 { font-size: 1.3rem; font-weight: normal; margin-bottom: 0.75rem; }
+  section p { margin-bottom: 0.9rem; max-width: 760px; }
+
+  /* ── Controls panel ─────────────────────────────────────── */
+  .controls-panel {
+    background: #fff; border: 1px solid var(--rule); padding: 1.4rem 1.6rem;
+    margin: 1.5rem 0; display: flex; flex-direction: column; gap: 1.3rem;
+  }
+  .control-row { display: flex; flex-wrap: wrap; gap: 1.8rem; align-items: flex-start; }
+  .control-block { display: flex; flex-direction: column; gap: 0.5rem; min-width: 200px; }
+  .control-label {
+    font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-faded);
+  }
+  .toggle-group { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .toggle-btn {
+    font-family: var(--serif); font-size: 0.8rem; padding: 0.32rem 0.7rem;
+    border: 1px solid var(--rule); background: #fff; color: var(--ink-faded);
+    cursor: pointer; border-radius: 2px; display: flex; align-items: center; gap: 0.4rem;
+    transition: all 0.15s;
+  }
+  .toggle-btn .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .toggle-btn.active { color: var(--ink); border-color: currentColor; font-weight: bold; }
+  .toggle-btn:not(.active) .dot { opacity: 0.35; }
+
+  .slider-block { flex: 1; min-width: 240px; }
+  .slider-readout {
+    display: flex; justify-content: space-between; font-family: var(--mono);
+    font-size: 0.7rem; color: var(--ink-faded); margin-bottom: 0.3rem;
+  }
+  .slider-readout strong { color: var(--oxblood); font-size: 0.85rem; }
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 3px; background: var(--rule);
+    outline: none; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--oxblood); cursor: pointer; border: 2px solid #fff;
+    box-shadow: 0 0 0 1px var(--oxblood);
+  }
+
+  .mode-toggle { display: flex; gap: 0; border: 1px solid var(--rule); width: fit-content; }
+  .mode-toggle button {
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.05em;
+    padding: 0.4rem 0.9rem; background: #fff; border: none; cursor: pointer;
+    color: var(--ink-faded); text-transform: uppercase;
+  }
+  .mode-toggle button.active { background: var(--oxblood); color: #fff; }
+  .mode-toggle button:not(:last-child) { border-right: 1px solid var(--rule); }
+
+  /* ── Chart area ─────────────────────────────────────────── */
+  .chart-frame {
+    background: #fff; border: 1px solid var(--rule); padding: 1.2rem 1.4rem 0.6rem; margin: 1.5rem 0;
+    position: relative;
+  }
+  .divide-label {
+    position: absolute; top: 0; bottom: 0; width: 1px; background: var(--ink-faded);
+    opacity: 0.3; pointer-events: none;
+  }
+  .chart-legend-banner {
+    display: flex; justify-content: space-between; font-family: var(--mono);
+    font-size: 0.62rem; letter-spacing: 0.04em; color: var(--ink-faded); margin-bottom: 0.7rem;
+    flex-wrap: wrap; gap: 0.4rem;
+  }
+  .chart-legend-banner .hist-flag { color: var(--ink-soft); }
+  .chart-legend-banner .proj-flag { color: var(--oxblood); font-weight: bold; }
+  canvas#mainChart { width: 100% !important; max-height: 440px; }
+
+  /* ── Event panel ────────────────────────────────────────── */
+  .events-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr));
+    gap: 0.7rem; margin-top: 1rem;
+  }
+  .event-card {
+    background: #fff; border: 1px solid var(--rule); border-left: 3px solid var(--rule);
+    padding: 0.65rem 0.85rem; font-size: 0.78rem; line-height: 1.5;
+  }
+  .event-card[data-cat="policy"] { border-left-color: var(--model-chatgpt); }
+  .event-card[data-cat="esg"] { border-left-color: var(--gold); }
+  .event-card[data-cat="science"] { border-left-color: var(--model-copilot); }
+  .event-card[data-cat="drl"] { border-left-color: var(--oxblood); }
+  .event-card .ev-year { font-family: var(--mono); font-size: 0.65rem; color: var(--ink-faded); margin-bottom: 0.2rem; }
+
+  /* ── Stats row ──────────────────────────────────────────── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 0.9rem;
+    margin: 1.2rem 0;
+  }
+  .stat-card { background: #fff; border: 1px solid var(--rule); padding: 0.9rem 1.1rem; }
+  .stat-card .stat-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faded); margin-bottom: 0.3rem; }
+  .stat-card .stat-value { font-size: 1.3rem; color: var(--oxblood); }
+  .stat-card .stat-sub { font-size: 0.72rem; color: var(--ink-faded); margin-top: 0.2rem; }
+
+  /* ── Model cards / open questions ──────────────────────────*/
+  .model-panel {
+    background: #fff; border: 1px solid var(--rule); border-left: 4px solid var(--ink-faded);
+    padding: 1rem 1.2rem; margin-bottom: 1rem;
+  }
+  .model-panel.m-chatgpt { border-left-color: var(--model-chatgpt); }
+  .model-panel.m-gemini { border-left-color: var(--model-gemini); }
+  .model-panel.m-copilot { border-left-color: var(--model-copilot); }
+  .model-panel.m-mistral { border-left-color: var(--model-mistral); }
+  .model-panel.m-perplexity { border-left-color: var(--model-perplexity); }
+  .model-panel h3 { font-size: 1rem; margin-bottom: 0.3rem; }
+  .model-panel .params { font-family: var(--mono); font-size: 0.68rem; color: var(--ink-faded); margin-bottom: 0.6rem; }
+  .model-panel .characterization { font-size: 0.85rem; font-style: italic; color: var(--ink-soft); margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-faint); }
+
+  /* ── Methodology table ──────────────────────────────────── */
+  table.method-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 1rem 0; }
+  table.method-table th { text-align: left; font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faded); border-bottom: 1px solid var(--rule); padding: 0.5rem 0.7rem; }
+  table.method-table td { padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--rule-faint); }
+
+  footer.site-footer { text-align: center; padding: 2rem; font-size: 0.75rem; color: var(--ink-faded); border-top: 1px solid var(--rule); margin-top: 2rem; }
+  footer.site-footer a { color: var(--ink-faded); }
+
+  @media (max-width: 700px) {
+    main { padding: 0 1rem; }
+    .control-row { flex-direction: column; gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-title"><a href="index.html">Divergent Resource Logic <em>— DRL</em></a></div>
+  <nav class="masthead-nav">
+    <a href="index.html">Home</a>
+    <a href="codex.html">Codex</a>
+    <a href="companions.html">Companions</a>
+    <a href="corrected-ledger/index.html">Corrected Ledger</a>
+    <a href="calculator.html">Calculator</a>
+    <a href="materials-timeline.html">Timeline</a>
+    <a href="multi-model-projection.html" class="active">Projection</a>
+    <a href="resources.html">Resources</a>
+    <a href="about.html">About</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="lede">
+  <span class="kicker">Companion graphic no. 05 — interactive</span>
+  <h1>What happened, and <em>what changes if the rule changes.</em></h1>
+  <p class="standfirst">Forty-five years of real policy, real ESG capital, and real atmospheric CO2 sit on the left half of this chart. Five AI models' independent projections of the DRL framework's climate effect, under fixed and disclosed assumptions, sit on the right. The question this page answers is not "is DRL correct" — no single chart can answer that. The question is: did three decades of climate policy and tens of trillions of dollars in sustainability-labelled capital bend the curve, and what do five independently-reasoning AI models project happens if the accounting boundary itself changes.</p>
+
+  <div class="draft-notice">
+    <strong>⚠ Working draft.</strong> The right-hand projection is AI-modelled, not measured — five models, given identical fixed inputs (global anchor, biome split, compounding formula), each chose their own forest-type weighting and elasticity value, producing five different but internally consistent projections. Every model's full working, including two self-corrected arithmetic errors and one model's declined task, is preserved in this page's methodology section. This is not a forecast. It is a transparent test of what a fixed accounting logic implies, run five times, by five different reasoners.
+  </div>
+</section>
+
+<section id="historical">
+  <span class="kicker">Part one — the record</span>
+  <h2>Did any of this bend the curve?</h2>
+  <p>Three decades of climate treaties, two ISO/CEN accounting standards, a thirty-five-trillion-dollar sustainable-investment peak, and the entire mass-timber federal funding apparatus documented in the Reagan Forestry Legacy paper — all plotted against the one number that actually measures whether any of it worked: atmospheric CO2 concentration, measured continuously at Mauna Loa since 1958.</p>
+
+  <div class="stats-row" id="histStats"></div>
+</section>
+
+<section id="controls-section">
+  <span class="kicker">Part two — the projection</span>
+  <h2>Interactive controls</h2>
+  <p>Set the adoption level, choose which biome and forest type to view, and toggle models on or off. The historical segment (left of today) never changes — it is sourced, dated fact. Only the projected segment (right of today) responds to these controls.</p>
+
+  <div class="controls-panel">
+    <div class="control-row">
+      <div class="slider-block">
+        <div class="slider-readout"><span>Adoption of full-boundary accounting</span><strong id="adoptionReadout">25%</strong></div>
+        <input type="range" id="adoptionSlider" min="25" max="100" step="1" value="25">
+      </div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-block">
+        <span class="control-label">Biome</span>
+        <div class="toggle-group" id="biomeToggles"></div>
+      </div>
+      <div class="control-block">
+        <span class="control-label">Forest type</span>
+        <div class="toggle-group" id="forestTypeToggles"></div>
+      </div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-block" style="flex:1;">
+        <span class="control-label">AI models (projection only — each chose its own weighting and elasticity)</span>
+        <div class="toggle-group" id="modelToggles"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-frame">
+    <div class="chart-legend-banner">
+      <span class="hist-flag">◄ historical — sourced and dated, see citations below</span>
+      <span class="proj-flag">projection — AI-modelled, not measured ►</span>
+    </div>
+    <canvas id="mainChart"></canvas>
+  </div>
+</section>
+
+<section id="events">
+  <span class="kicker">The policy &amp; ESG timeline</span>
+  <h2>Every marker on the historical axis</h2>
+  <p>Click any marker on the chart, or read the full list below. Each is dated and sourced.</p>
+  <div class="events-grid" id="eventsGrid"></div>
+</section>
+
+<section id="models">
+  <span class="kicker">Part three — what each model said</span>
+  <h2>Five models, five sets of assumptions, five conclusions</h2>
+  <p>Every model received the identical fixed inputs (22 billion tonne global anchor, FAO biome split, compounding elasticity formula). Each independently chose its own forest-type weighting multiple and elasticity value — and its own answer to the open question this study asked every model: is the pattern DRL describes deliberate industry protectionism, unintentional institutional drift, sound technical practice, or something else.</p>
+  <div id="modelPanels"></div>
+</section>
+
+<section id="methodology">
+  <span class="kicker">Methodology</span>
+  <h2>How this page was built, including where it went wrong first</h2>
+  <p>This dataset was not generated by Claude. It was generated by sending an identical, fixed-input prompt to five separate AI models — ChatGPT, Gemini, Copilot, Mistral, and Perplexity — each in a fresh session with no prior conversation history, and independently verifying every returned figure against that model's own stated formula before accepting it. Two models' first attempts contained real arithmetic errors, caught and corrected through this process; one model declined to produce bulk numeric output on policy grounds and instead supplied a fully worked, independently verified formula; one model completed only a single verified slice of the full matrix. All of this — including the errors — is preserved below rather than smoothed into a single clean number, because the failure modes are themselves part of what this study was built to find.</p>
+
+  <table class="method-table">
+    <thead><tr><th>Model</th><th>Native weighting</th><th>Elasticity (per year, 100% adoption)</th><th>Status</th></tr></thead>
+    <tbody id="methodTableBody"></tbody>
+  </table>
+
+  <p style="margin-top:1.5rem; font-size: 0.85rem; color: var(--ink-soft);"><strong>Fixed inputs given to every model:</strong> Global anchor 22,000,000,000 tonnes CO2e/year (midpoint of the conservative range in "Is GWP Solving Anything?"). Biome split: tropical 45%, boreal 27%, temperate 16%, subtropical 11% (FAO Global Forest Resources Assessment 2020). Forest-type area split: 93% naturally regenerating, 7% planted (FAO 2020). Compounding formula: gap(year) = gap(0) × (1 − elasticity × adoption_pct/100)^year.</p>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <p>Full Boundary Carbon — <a href="index.html">fullboundarycarbon.org</a> · <a href="legal.html">Legal</a> · <a href="feedback.html">Feedback</a> · <a href="revision-history.html">Revision history</a></p>
+</footer>
+
+<script src="embedded_data.js"></script>
+<script src="chart_logic.js"></script>
+
+</body>
+</html>
