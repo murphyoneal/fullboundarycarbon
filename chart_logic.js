@@ -53,11 +53,30 @@ let state = {
   activeModels: new Set(['ChatGPT','Gemini','Copilot'])
 };
 
+const MODEL_COVERAGE = {
+  ChatGPT: { biomes: ['tropical','boreal','temperate'], forestTypes: ['plantation','native_old_growth'] },
+  Gemini: { biomes: ['tropical','boreal','temperate'], forestTypes: ['plantation','native_old_growth'] },
+  Copilot: { biomes: ['tropical','boreal','temperate'], forestTypes: ['plantation','native_old_growth'] },
+  Mistral: { biomes: ['tropical','boreal'], forestTypes: ['plantation','native_old_growth'] },
+  Perplexity: { biomes: ['boreal'], forestTypes: ['native_old_growth'] }
+};
+
+function modelCoversSelection(modelName, biome, forestType) {
+  const cov = MODEL_COVERAGE[modelName];
+  if (!cov) return false;
+  const biomeOk = biome === 'all' ? cov.biomes.length === 3 : cov.biomes.includes(biome);
+  const typeOk = forestType === 'both' ? cov.forestTypes.length === 2 : cov.forestTypes.includes(forestType);
+  return biomeOk && typeOk;
+}
+
 function aggregateForCell(biome, forestType, adoption, modelFilterFn) {
-  // Returns { modelName: {year: value} } aggregated by summing matching rows
+  // Returns { modelName: {year: value} } aggregated by summing matching rows.
+  // Only includes a model if its verified data fully covers the current selection --
+  // partial models are silently excluded rather than shown as an artificially low total.
   const result = {};
   for (const row of MODEL_DATA) {
     if (!modelFilterFn(row.model)) continue;
+    if (!modelCoversSelection(row.model, biome, forestType)) continue;
     if (biome !== 'all' && row.biome !== biome) continue;
     if (forestType !== 'both' && row.forest_type !== forestType) continue;
     if (row.adoption_pct !== adoption) continue;
@@ -86,6 +105,7 @@ function buildToggles() {
     const btn = document.createElement('button');
     btn.className = 'toggle-btn' + (state.forestType === val ? ' active' : '');
     btn.textContent = label;
+    btn.dataset.value = val;
     btn.onclick = () => { state.forestType = val; render(); };
     typeWrap.appendChild(btn);
   });
@@ -96,6 +116,7 @@ function buildToggles() {
     const isOn = state.activeModels.has(m);
     btn.className = 'toggle-btn' + (isOn ? ' active' : '');
     btn.innerHTML = `<span class="dot" style="background:${MODEL_COLORS[m]}"></span>${m}`;
+    btn.dataset.value = m;
     btn.onclick = () => {
       if (state.activeModels.has(m)) state.activeModels.delete(m);
       else state.activeModels.add(m);
@@ -108,13 +129,34 @@ function buildToggles() {
 let chartInstance = null;
 
 function render() {
-  // update toggle active states
+  // update toggle active states across all three toggle groups
   document.querySelectorAll('#biomeToggles .toggle-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.value === state.biome);
+  });
+  document.querySelectorAll('#forestTypeToggles .toggle-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.value === state.forestType);
+  });
+  document.querySelectorAll('#modelToggles .toggle-btn').forEach(b => {
+    b.classList.toggle('active', state.activeModels.has(b.dataset.value));
   });
   document.getElementById('adoptionReadout').textContent = state.adoption + '%';
 
   const aggregated = aggregateForCell(state.biome, state.forestType, state.adoption, (m) => state.activeModels.has(m));
+
+  // Surface which active models are toggled on but not rendering due to incomplete coverage
+  let coverageNote = document.getElementById('coverageNote');
+  if (!coverageNote) {
+    coverageNote = document.createElement('div');
+    coverageNote.id = 'coverageNote';
+    coverageNote.style.cssText = 'font-family:var(--mono);font-size:0.68rem;color:var(--gold);margin-top:0.5rem;';
+    document.querySelector('.controls-panel').appendChild(coverageNote);
+  }
+  const missing = Array.from(state.activeModels).filter(m =>
+    !modelCoversSelection(m, state.biome, state.forestType)
+  );
+  coverageNote.textContent = missing.length
+    ? `Not shown for this selection — incomplete data: ${missing.join(', ')}. See methodology table below.`
+    : '';
 
   // Build labels: historical years + projection years (0,1,5,10,15,20 mapped to 2026-2046)
   const histYears = HIST_DATA.co2_ppm.series.map(p => p.year);
@@ -126,58 +168,92 @@ function render() {
   const datasets = [];
 
   // Historical CO2 ppm line (left axis, separate scale shown as background context)
-  const co2Map = {};
-  HIST_DATA.co2_ppm.series.forEach(p => co2Map[p.year] = p.ppm);
   datasets.push({
     label: 'Atmospheric CO2 (ppm) — historical',
-    data: allLabels.map(y => co2Map[y] !== undefined ? co2Map[y] : null),
+    data: HIST_DATA.co2_ppm.series.map(p => ({x: p.year, y: p.ppm})),
     borderColor: '#1a1a1a',
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    pointRadius: 1.5,
+    backgroundColor: 'rgba(26,26,26,0.04)',
+    fill: true,
+    borderWidth: 2.5,
+    pointRadius: 3,
+    pointBackgroundColor: '#1a1a1a',
     yAxisID: 'y1',
     spanGaps: true,
     tension: 0.15,
-    order: 1
+    order: 2
   });
 
   // Model projection lines (right axis, tonnes CO2e gap)
   Object.keys(aggregated).forEach(modelName => {
     const yearMap = aggregated[modelName];
-    const data = allLabels.map(y => {
-      const offset = y - baseYear;
-      if (offset < 0) return null; // historical region, no projection
-      if (!projYearOffsets.includes(offset)) return null;
-      return yearMap[offset] !== undefined ? yearMap[offset] / 1e9 : null; // convert to Gt
-    });
+    const data = projYearOffsets
+      .filter(offset => yearMap[offset] !== undefined)
+      .map(offset => ({x: baseYear + offset, y: yearMap[offset] / 1e9}));
     datasets.push({
       label: modelName + ' (modelled, GtCO2e/yr)',
       data: data,
       borderColor: MODEL_COLORS[modelName],
-      backgroundColor: 'transparent',
-      borderWidth: 2,
-      borderDash: [6,3],
-      pointRadius: 3,
+      backgroundColor: MODEL_COLORS[modelName] + '18',
+      fill: false,
+      borderWidth: 3,
+      borderDash: [7,4],
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      pointBackgroundColor: MODEL_COLORS[modelName],
+      pointBorderColor: '#fff',
+      pointBorderWidth: 1.5,
       yAxisID: 'y2',
       spanGaps: true,
       tension: 0.1,
-      order: 0
+      order: 1
     });
   });
+
+  const todayPlugin = {
+    id: 'todayDivider',
+    afterDraw: (chart) => {
+      const xScale = chart.scales.x;
+      const area = chart.chartArea;
+      const x = xScale.getPixelForValue(baseYear);
+      const ctxp = chart.ctx;
+      ctxp.save();
+      ctxp.beginPath();
+      ctxp.moveTo(x, area.top);
+      ctxp.lineTo(x, area.bottom);
+      ctxp.lineWidth = 2;
+      ctxp.strokeStyle = '#6e1f1f';
+      ctxp.setLineDash([4,4]);
+      ctxp.stroke();
+      ctxp.fillStyle = '#6e1f1f';
+      ctxp.font = 'bold 11px monospace';
+      ctxp.textAlign = 'center';
+      ctxp.fillText('TODAY', x, area.top - 6);
+      ctxp.restore();
+    }
+  };
 
   const ctx = document.getElementById('mainChart');
   if (chartInstance) chartInstance.destroy();
   chartInstance = new Chart(ctx, {
     type: 'line',
     data: { labels: allLabels, datasets: datasets },
+    plugins: [todayPlugin],
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
       plugins: {
         legend: { display: false },
         tooltip: {
           callbacks: {
+            title: function(items) {
+              const yr = items[0].parsed.x;
+              const offset = yr - baseYear;
+              if (offset >= 0 && projYearOffsets.includes(offset)) {
+                return `${yr} (+${offset}yr projection checkpoint)`;
+              }
+              return String(yr);
+            },
             label: function(ctx) {
               const v = ctx.parsed.y;
               if (v === null) return null;
@@ -189,18 +265,33 @@ function render() {
       },
       scales: {
         x: {
-          ticks: { autoSkip: true, maxTicksLimit: 14, font: { size: 10 } },
+          type: 'linear',
+          min: histYears[0],
+          max: projYears[projYears.length - 1],
+          ticks: {
+            stepSize: 5,
+            font: { size: 10 },
+            callback: function(val) {
+              const offset = val - baseYear;
+              if (offset > 0 && projYearOffsets.includes(offset)) return '+' + offset + 'yr';
+              if (offset === 0) return val + ' (today)';
+              if (Number.isInteger(val)) return val;
+              return '';
+            }
+          },
           grid: { color: '#e8e4d9' }
         },
         y1: {
           position: 'left',
-          title: { display: true, text: 'CO2 (ppm)', font: { size: 11 } },
+          title: { display: true, text: 'CO2 (ppm) — historical', font: { size: 11 } },
           grid: { color: '#e8e4d9' }
         },
         y2: {
           position: 'right',
-          title: { display: true, text: 'Modelled gap (GtCO2e/yr)', font: { size: 11 } },
-          grid: { display: false }
+          title: { display: true, text: 'Modelled gap (GtCO2e/yr) — projection', font: { size: 11 } },
+          grid: { display: false },
+          min: 0,
+          suggestedMax: 25
         }
       }
     }
