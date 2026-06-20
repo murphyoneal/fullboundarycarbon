@@ -221,13 +221,45 @@ function render() {
     order: 3
   });
 
+  // Detect models whose full trajectory is numerically identical (or near-identical) to another
+  // active model's -- this happens when two models independently chose the same weighting and
+  // elasticity, which is a real finding (see methodology section), not an error. Without an offset,
+  // identical lines render as a single fused line and one model becomes invisible and unclickable.
+  const modelNames = Object.keys(anchors);
+  const trajectoryKey = (name) => {
+    const interp = interpolateAtAdoption(anchors[name], state.adoption);
+    return projYearOffsets.map(o => Math.round((interp[o] || 0) / 1e7)).join(',');
+  };
+  const seenTrajectories = {};
+  const overlapGroups = {};
+  modelNames.forEach(name => {
+    const key = trajectoryKey(name);
+    if (!seenTrajectories[key]) seenTrajectories[key] = [];
+    seenTrajectories[key].push(name);
+  });
+  modelNames.forEach(name => {
+    const key = trajectoryKey(name);
+    const group = seenTrajectories[key];
+    overlapGroups[name] = group.length > 1 ? group : null;
+  });
+
+  let overlapNotice = [];
+
   Object.keys(anchors).forEach(modelName => {
     const interpolated = interpolateAtAdoption(anchors[modelName], state.adoption);
+    const group = overlapGroups[modelName];
+    const indexInGroup = group ? group.indexOf(modelName) : 0;
+    // Small vertical offset in chart units (Gt) so overlapping lines fan out just enough to stay
+    // independently visible and clickable, without visually misrepresenting the underlying values.
+    const offsetGt = group ? (indexInGroup - (group.length - 1) / 2) * 0.18 : 0;
+    if (group && indexInGroup === 0 && !overlapNotice.includes(group.join('/'))) {
+      overlapNotice.push(group.join('/'));
+    }
     const data = projYearOffsets
       .filter(offset => interpolated[offset] !== undefined)
-      .map(offset => ({x: baseYear + offset, y: interpolated[offset] / 1e9}));
+      .map(offset => ({x: baseYear + offset, y: (interpolated[offset] / 1e9) + offsetGt}));
     datasets.push({
-      label: modelName + ' (modelled, GtCO2e/yr)',
+      label: modelName + ' (modelled, GtCO2e/yr)' + (group ? ' [identical trajectory to ' + group.filter(g=>g!==modelName).join(', ') + ' — offset for visibility]' : ''),
       data: data,
       borderColor: MODEL_COLORS[modelName],
       backgroundColor: MODEL_COLORS[modelName] + '18',
@@ -399,9 +431,7 @@ function render() {
         y2: {
           position: 'right',
           title: { display: true, text: 'Modelled gap (GtCO2e/yr) — projection', font: { size: 11 } },
-          grid: { display: false },
-          min: 0,
-          suggestedMax: 25
+          grid: { display: false }
         },
         y3: {
           position: 'right',
@@ -417,6 +447,7 @@ function render() {
   });
 
   setupEventMarkerClicks(ctx);
+  window._lastOverlapNotice = overlapNotice;
   renderLegendBelow();
 }
 
@@ -534,6 +565,22 @@ function renderLegendBelow() {
            <span style="width:8px;height:8px;border-radius:50%;background:#6e1f1f;display:inline-block;"></span>DRL (event markers, bottom of chart)</span>`;
   wrap.innerHTML = html;
   document.querySelector('.chart-frame').appendChild(wrap);
+
+  let overlapNote = document.getElementById('overlapNote');
+  if (!overlapNote) {
+    overlapNote = document.createElement('div');
+    overlapNote.id = 'overlapNote';
+    document.querySelector('.chart-frame').appendChild(overlapNote);
+  }
+  const groups = window._lastOverlapNotice || [];
+  if (groups.length) {
+    overlapNote.style.cssText = 'font-family:var(--mono); font-size:0.7rem; color:var(--ink-soft); background:#f4f1ea; border:1px dashed var(--rule); padding:0.5rem 0.7rem; margin-top:0.6rem; line-height:1.5;';
+    overlapNote.innerHTML = groups.map(g =>
+      `<strong>${g}</strong> chose identical or near-identical weighting and elasticity and produce numerically equal trajectories — both lines are real and independently plotted, offset slightly here so neither is hidden behind the other.`
+    ).join('<br>');
+  } else {
+    overlapNote.style.cssText = 'display:none;';
+  }
 }
 
 function renderHistStats() {
