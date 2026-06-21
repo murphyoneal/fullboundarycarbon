@@ -178,17 +178,18 @@ function render() {
   if (!coverageNote) {
     coverageNote = document.createElement('div');
     coverageNote.id = 'coverageNote';
-    coverageNote.style.cssText = 'font-family:var(--mono);font-size:0.68rem;color:var(--gold);margin-top:0.5rem;';
+    coverageNote.style.cssText = 'display:none;';
     document.querySelector('.controls-panel').appendChild(coverageNote);
   }
   const missing = Array.from(state.activeModels).filter(m =>
     !modelCoversSelection(m, state.biome, state.forestType)
   );
+  const verb = missing.length > 1 ? 'have' : 'has';
   coverageNote.innerHTML = missing.length
-    ? `<strong>⚠ Not plotted for this selection</strong> — ${missing.join(' and ')} ${missing.length > 1 ? "don't" : "doesn't"} have verified data covering this biome/forest-type combination. Switch to <strong>Boreal + Native/old-growth</strong> to see all five models at once, or see the methodology table below for exact coverage.`
+    ? `<strong>Partial coverage for this view.</strong> ${missing.join(' and ')} ${verb} only been verified for <strong>Boreal + Native/old-growth</strong> (see the methodology table below) and ${missing.length > 1 ? "aren't" : "isn't"} shown here. Switch to that selection to compare all five models at once.`
     : '';
   coverageNote.style.cssText = missing.length
-    ? 'font-family:var(--mono);font-size:0.72rem;color:#fff;background:var(--oxblood);padding:0.5rem 0.7rem;margin-top:0.7rem;line-height:1.5;'
+    ? 'font-family:var(--mono);font-size:0.72rem;color:var(--ink-soft);background:#fff;border:1px solid var(--gold);border-left:3px solid var(--gold);padding:0.55rem 0.8rem;margin-top:0.7rem;line-height:1.55;'
     : 'display:none;';
 
   // Mark affected model toggle buttons directly with a strike pattern
