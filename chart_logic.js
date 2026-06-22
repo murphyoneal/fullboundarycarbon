@@ -56,11 +56,10 @@ const MODEL_RESPONSES = {
 
 let state = {
   adoption: 25,
-  biome: 'boreal',
-  forestType: 'native_old_growth',
-  activeModels: new Set(['ChatGPT','Gemini','Copilot','Mistral','Perplexity']),
-  showSpend: true,
-  activeEvent: null
+  biome: 'all',
+  forestType: 'both',
+  activeModels: new Set(['ChatGPT','Gemini','Copilot']),
+  showSpend: true
 };
 
 function modelCoversSelection(modelName, biome, forestType) {
@@ -178,27 +177,15 @@ function render() {
   if (!coverageNote) {
     coverageNote = document.createElement('div');
     coverageNote.id = 'coverageNote';
-    coverageNote.style.cssText = 'display:none;';
+    coverageNote.style.cssText = 'font-family:var(--mono);font-size:0.68rem;color:var(--gold);margin-top:0.5rem;';
     document.querySelector('.controls-panel').appendChild(coverageNote);
   }
   const missing = Array.from(state.activeModels).filter(m =>
     !modelCoversSelection(m, state.biome, state.forestType)
   );
-  const verb = missing.length > 1 ? 'have' : 'has';
-  coverageNote.innerHTML = missing.length
-    ? `<strong>Partial coverage for this view.</strong> ${missing.join(' and ')} ${verb} only been verified for <strong>Boreal + Native/old-growth</strong> (see the methodology table below) and ${missing.length > 1 ? "aren't" : "isn't"} shown here. Switch to that selection to compare all five models at once.`
+  coverageNote.textContent = missing.length
+    ? `Not shown for this selection — incomplete data: ${missing.join(', ')}. See methodology table below.`
     : '';
-  coverageNote.style.cssText = missing.length
-    ? 'font-family:var(--mono);font-size:0.72rem;color:var(--ink-soft);background:#fff;border:1px solid var(--gold);border-left:3px solid var(--gold);padding:0.55rem 0.8rem;margin-top:0.7rem;line-height:1.55;'
-    : 'display:none;';
-
-  // Mark affected model toggle buttons directly with a strike pattern
-  document.querySelectorAll('#modelToggles .toggle-btn').forEach(b => {
-    const m = b.dataset.value;
-    const isMissing = state.activeModels.has(m) && !modelCoversSelection(m, state.biome, state.forestType);
-    b.style.opacity = isMissing ? '0.45' : '1';
-    b.title = isMissing ? 'No verified data for the current biome/forest-type selection' : '';
-  });
 
   const histYears = HIST_DATA.co2_ppm.series.map(p => p.year);
   const baseYear = 2026;
@@ -222,45 +209,13 @@ function render() {
     order: 3
   });
 
-  // Detect models whose full trajectory is numerically identical (or near-identical) to another
-  // active model's -- this happens when two models independently chose the same weighting and
-  // elasticity, which is a real finding (see methodology section), not an error. Without an offset,
-  // identical lines render as a single fused line and one model becomes invisible and unclickable.
-  const modelNames = Object.keys(anchors);
-  const trajectoryKey = (name) => {
-    const interp = interpolateAtAdoption(anchors[name], state.adoption);
-    return projYearOffsets.map(o => Math.round((interp[o] || 0) / 1e7)).join(',');
-  };
-  const seenTrajectories = {};
-  const overlapGroups = {};
-  modelNames.forEach(name => {
-    const key = trajectoryKey(name);
-    if (!seenTrajectories[key]) seenTrajectories[key] = [];
-    seenTrajectories[key].push(name);
-  });
-  modelNames.forEach(name => {
-    const key = trajectoryKey(name);
-    const group = seenTrajectories[key];
-    overlapGroups[name] = group.length > 1 ? group : null;
-  });
-
-  let overlapNotice = [];
-
   Object.keys(anchors).forEach(modelName => {
     const interpolated = interpolateAtAdoption(anchors[modelName], state.adoption);
-    const group = overlapGroups[modelName];
-    const indexInGroup = group ? group.indexOf(modelName) : 0;
-    // Small vertical offset in chart units (Gt) so overlapping lines fan out just enough to stay
-    // independently visible and clickable, without visually misrepresenting the underlying values.
-    const offsetGt = group ? (indexInGroup - (group.length - 1) / 2) * 0.18 : 0;
-    if (group && indexInGroup === 0 && !overlapNotice.includes(group.join('/'))) {
-      overlapNotice.push(group.join('/'));
-    }
     const data = projYearOffsets
       .filter(offset => interpolated[offset] !== undefined)
-      .map(offset => ({x: baseYear + offset, y: (interpolated[offset] / 1e9) + offsetGt}));
+      .map(offset => ({x: baseYear + offset, y: interpolated[offset] / 1e9}));
     datasets.push({
-      label: modelName + ' (modelled, GtCO2e/yr)' + (group ? ' [identical trajectory to ' + group.filter(g=>g!==modelName).join(', ') + ' — offset for visibility]' : ''),
+      label: modelName + ' (modelled, GtCO2e/yr)',
       data: data,
       borderColor: MODEL_COLORS[modelName],
       backgroundColor: MODEL_COLORS[modelName] + '18',
@@ -285,23 +240,17 @@ function render() {
       label: 'Forestry market-development spend, cumulative (USD millions)',
       data: spendSeries.map(p => ({x: p.year, y: p.cumulative_usd / 1e6})),
       borderColor: '#b8860b',
-      backgroundColor: 'rgba(184,134,11,0.10)',
-      fill: 'origin',
-      borderWidth: 2.5,
-      pointRadius: 7,
-      pointHoverRadius: 9,
-      pointBackgroundColor: '#fff',
-      pointBorderColor: '#b8860b',
-      pointBorderWidth: 3,
+      backgroundColor: 'rgba(184,134,11,0.12)',
+      fill: true,
+      borderWidth: 2,
+      borderDash: [2,2],
+      pointRadius: 4,
+      pointBackgroundColor: '#b8860b',
       yAxisID: 'y3',
-      tension: 0,
-      spanGaps: true,
+      stepped: 'before',
       order: 2
     });
   }
-
-  // Track marker hit-zones for click/hover detection, rebuilt every render
-  window._eventMarkerZones = [];
 
   const eventMarkerPlugin = {
     id: 'eventMarkers',
@@ -310,43 +259,21 @@ function render() {
       const area = chart.chartArea;
       const ctxp = chart.ctx;
       const catColor = { policy: '#2e6b9e', esg: '#b8860b', science: '#1d8a5e', drl: '#6e1f1f' };
-      window._eventMarkerZones = [];
-      // Group events by year so overlapping years offset horizontally, same pattern as materials-timeline.html
-      const byYear = {};
       HIST_DATA.policy_timeline.forEach(ev => {
         if (ev.year < histYears[0] || ev.year > baseYear) return;
-        if (!byYear[ev.year]) byYear[ev.year] = [];
-        byYear[ev.year].push(ev);
-      });
-      Object.keys(byYear).forEach(yearStr => {
-        const year = Number(yearStr);
-        const evts = byYear[yearStr];
-        const baseX = xScale.getPixelForValue(year);
-        evts.forEach((ev, i) => {
-          const offset = (i - (evts.length - 1) / 2) * 8;
-          const x = baseX + offset;
-          const markerY = area.bottom - 12;
-          const isActive = state.activeEvent === ev;
-          ctxp.save();
-          ctxp.beginPath();
-          ctxp.moveTo(x, area.bottom);
-          ctxp.lineTo(x, markerY);
-          ctxp.strokeStyle = catColor[ev.category] || '#888';
-          ctxp.lineWidth = isActive ? 3 : 2;
-          ctxp.globalAlpha = isActive ? 1 : 0.75;
-          ctxp.stroke();
-          ctxp.beginPath();
-          ctxp.arc(x, markerY, isActive ? 6 : 4, 0, Math.PI*2);
-          ctxp.fillStyle = catColor[ev.category] || '#888';
-          ctxp.fill();
-          if (isActive) {
-            ctxp.lineWidth = 2;
-            ctxp.strokeStyle = '#fff';
-            ctxp.stroke();
-          }
-          ctxp.restore();
-          window._eventMarkerZones.push({ x, y: markerY, radius: 8, event: ev });
-        });
+        const x = xScale.getPixelForValue(ev.year);
+        ctxp.save();
+        ctxp.beginPath();
+        ctxp.moveTo(x, area.bottom);
+        ctxp.lineTo(x, area.bottom - 10);
+        ctxp.strokeStyle = catColor[ev.category] || '#888';
+        ctxp.lineWidth = 2;
+        ctxp.stroke();
+        ctxp.beginPath();
+        ctxp.arc(x, area.bottom - 10, 3, 0, Math.PI*2);
+        ctxp.fillStyle = catColor[ev.category] || '#888';
+        ctxp.fill();
+        ctxp.restore();
       });
     }
   };
@@ -432,117 +359,20 @@ function render() {
         y2: {
           position: 'right',
           title: { display: true, text: 'Modelled gap (GtCO2e/yr) — projection', font: { size: 11 } },
-          grid: { display: false }
-        },
-        y3: {
-          position: 'right',
-          title: { display: true, text: 'Cumulative spend (USD millions)', font: { size: 11, weight: 'normal' }, color: '#b8860b' },
           grid: { display: false },
           min: 0,
-          suggestedMax: 250,
-          ticks: { color: '#b8860b', font: { size: 10 } },
-          afterFit: (axis) => { axis.paddingLeft = 10; }
+          suggestedMax: 25
+        },
+        y3: {
+          display: false,
+          position: 'right',
+          min: 0
         }
       }
     }
   });
 
-  setupEventMarkerClicks(ctx);
-  window._lastOverlapNotice = overlapNotice;
   renderLegendBelow();
-}
-
-function setupEventMarkerClicks(canvas) {
-  // Remove any previously attached listener to avoid stacking duplicates across re-renders
-  if (canvas._eventClickHandler) {
-    canvas.removeEventListener('click', canvas._eventClickHandler);
-    canvas.removeEventListener('mousemove', canvas._eventMoveHandler);
-  }
-  // Chart.js draws on a canvas scaled by devicePixelRatio for crisp rendering on retina/high-DPI
-  // screens. getPixelForValue() returns coordinates in that internal scaled space, but mouse
-  // events report coordinates in CSS/display space. Convert mouse coordinates into the same
-  // scaled space the marker zones were recorded in before hit-testing, or every click on a
-  // high-DPI screen lands far from where the marker actually appears to be.
-  function toCanvasSpace(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY
-    };
-  }
-  canvas._eventClickHandler = (e) => {
-    const { x: mx, y: my } = toCanvasSpace(e.clientX, e.clientY);
-    const zones = window._eventMarkerZones || [];
-    const hit = zones.find(z => Math.hypot(z.x - mx, z.y - my) <= z.radius + 6);
-    if (hit) {
-      state.activeEvent = hit.event;
-      showEventPopup(hit.event, hit.x);
-      syncEventCardHighlight(hit.event);
-      if (chartInstance) chartInstance.draw();
-    } else {
-      hideEventPopup();
-      state.activeEvent = null;
-      syncEventCardHighlight(null);
-      if (chartInstance) chartInstance.draw();
-    }
-  };
-  canvas._eventMoveHandler = (e) => {
-    const { x: mx, y: my } = toCanvasSpace(e.clientX, e.clientY);
-    const zones = window._eventMarkerZones || [];
-    const hit = zones.find(z => Math.hypot(z.x - mx, z.y - my) <= z.radius + 6);
-    canvas.style.cursor = hit ? 'pointer' : 'default';
-  };
-  canvas.addEventListener('click', canvas._eventClickHandler);
-  canvas.addEventListener('mousemove', canvas._eventMoveHandler);
-}
-
-function showEventPopup(ev, xPos) {
-  let popup = document.getElementById('eventPopup');
-  if (!popup) {
-    popup = document.createElement('div');
-    popup.id = 'eventPopup';
-    popup.style.cssText = 'position:relative; margin-top:0.6rem; padding:0.8rem 1rem; background:#fff; border:1px solid var(--rule); border-left:4px solid; font-size:0.85rem; line-height:1.5;';
-    document.querySelector('.chart-frame').appendChild(popup);
-  }
-  const catColor = { policy: '#2e6b9e', esg: '#b8860b', science: '#1d8a5e', drl: '#6e1f1f' };
-  popup.style.borderLeftColor = catColor[ev.category] || '#888';
-  popup.style.display = 'block';
-  const spendLine = ev.spend_usd
-    ? `<div style="margin-top:0.4rem; font-family: var(--mono); font-size: 0.75rem; color: var(--gold);">$${(ev.spend_usd/1e12).toFixed(1)}T global ESG AUM (not forestry-specific)</div>`
-    : `<div style="margin-top:0.4rem; font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faded); font-style: italic;">No discrete spend figure exists for this event — see note below the event list.</div>`;
-  popup.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-      <div>
-        <div style="font-family: var(--mono); font-size: 0.7rem; color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.05em;">${ev.year} — ${ev.category}</div>
-        <div style="margin-top:0.3rem; font-size: 0.95rem;">${ev.label}</div>
-        ${ev.spend_note ? `<div style="margin-top:0.4rem; font-size:0.78rem; color: var(--ink-soft);">${ev.spend_note}</div>` : ''}
-        ${spendLine}
-      </div>
-      <button onclick="hideEventPopup(); state.activeEvent=null; syncEventCardHighlight(null); if(chartInstance) chartInstance.draw();" style="background:none; border:none; cursor:pointer; font-size:1.1rem; color: var(--ink-faded); line-height:1;">×</button>
-    </div>
-  `;
-}
-
-function hideEventPopup() {
-  const popup = document.getElementById('eventPopup');
-  if (popup) popup.style.display = 'none';
-}
-
-function syncEventCardHighlight(ev) {
-  document.querySelectorAll('.event-card').forEach(card => {
-    card.style.borderLeftWidth = '3px';
-    card.style.boxShadow = 'none';
-  });
-  if (!ev) return;
-  const key = `${ev.year}-${ev.label.slice(0,20)}`;
-  const card = document.querySelector(`.event-card[data-event-key="${CSS.escape(key)}"]`);
-  if (card) {
-    card.style.borderLeftWidth = '5px';
-    card.style.boxShadow = '0 0 0 1px rgba(110,31,31,0.15)';
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
 }
 
 function renderLegendBelow() {
@@ -566,22 +396,6 @@ function renderLegendBelow() {
            <span style="width:8px;height:8px;border-radius:50%;background:#6e1f1f;display:inline-block;"></span>DRL (event markers, bottom of chart)</span>`;
   wrap.innerHTML = html;
   document.querySelector('.chart-frame').appendChild(wrap);
-
-  let overlapNote = document.getElementById('overlapNote');
-  if (!overlapNote) {
-    overlapNote = document.createElement('div');
-    overlapNote.id = 'overlapNote';
-    document.querySelector('.chart-frame').appendChild(overlapNote);
-  }
-  const groups = window._lastOverlapNotice || [];
-  if (groups.length) {
-    overlapNote.style.cssText = 'font-family:var(--mono); font-size:0.7rem; color:var(--ink-soft); background:#f4f1ea; border:1px dashed var(--rule); padding:0.5rem 0.7rem; margin-top:0.6rem; line-height:1.5;';
-    overlapNote.innerHTML = groups.map(g =>
-      `<strong>${g}</strong> chose identical or near-identical weighting and elasticity and produce numerically equal trajectories — both lines are real and independently plotted, offset slightly here so neither is hidden behind the other.`
-    ).join('<br>');
-  } else {
-    overlapNote.style.cssText = 'display:none;';
-  }
 }
 
 function renderHistStats() {
@@ -619,19 +433,10 @@ function renderEvents() {
     const card = document.createElement('div');
     card.className = 'event-card';
     card.dataset.cat = ev.category;
-    card.dataset.eventKey = `${ev.year}-${ev.label.slice(0,20)}`;
-    card.style.cursor = 'pointer';
     const spendLine = ev.spend_usd
       ? `<div style="margin-top:0.3rem; font-family: var(--mono); font-size: 0.68rem; color: var(--gold);">$${(ev.spend_usd/1e12).toFixed(1)}T global ESG AUM (not forestry-specific)</div>`
       : `<div style="margin-top:0.3rem; font-family: var(--mono); font-size: 0.65rem; color: var(--ink-faded); font-style: italic;">No discrete spend figure exists for this event</div>`;
     card.innerHTML = `<div class="ev-year">${ev.year} — ${ev.category.toUpperCase()}</div><div>${ev.label}</div>${spendLine}`;
-    card.addEventListener('click', () => {
-      state.activeEvent = ev;
-      showEventPopup(ev, null);
-      syncEventCardHighlight(ev);
-      if (chartInstance) chartInstance.draw();
-      document.querySelector('.chart-frame').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
     grid.appendChild(card);
   });
 }
